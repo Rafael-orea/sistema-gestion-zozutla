@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controller.IncidenciaEnvioController"
+      spacing="20" alignment="CENTER"
+      prefWidth="450" prefHeight="400"
+      style="-fx-padding: 30; -fx-background-color: #F5F0E8;">
+
+    <Label text="INCIDENCIAS DE ENVIO"
+           style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="FOLIO DE ENVIO:"
+               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+        <Label fx:id="folioLabel" text="----------"
+               style="-fx-text-fill: #6B5A45; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <VBox spacing="6">
+            <Label text="Piezas faltantes"
+                   style="-fx-font-size: 12px; -fx-text-fill: #2B2118;"/>
+            <Spinner fx:id="faltantesSpinner" prefWidth="100"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="Piezas rotas"
+                   style="-fx-font-size: 12px; -fx-text-fill: #2B2118;"/>
+            <Spinner fx:id="rotasSpinner" prefWidth="100"/>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="6">
+        <Label text="Descripcion"
+               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+        <TextArea fx:id="descripcionArea"
+                  promptText="Detalle de la incidencia..."
+                  prefHeight="120" prefWidth="380"
+                  style="-fx-background-color: #EDE8DC; -fx-border-color: #C0B090; -fx-border-width: 1;"/>
+    </VBox>
+
+    <Button text="GUARDAR INCIDENCIA"
+            onAction="#handleGuardarIncidencia"
+            prefWidth="200" prefHeight="40"
+            style="-fx-background-color: #2B2118; -fx-text-fill: #F5F0E8; -fx-font-size: 13px; -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+</VBox>

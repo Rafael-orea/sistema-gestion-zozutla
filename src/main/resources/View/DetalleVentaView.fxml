@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controller.DetalleVentaController"
+      alignment="CENTER" spacing="30"
+      prefWidth="500" prefHeight="400"
+      style="-fx-padding: 40; -fx-background-color: #F5F0E8;">
+
+    <Label text="VENTA REGISTRADA CON EXITO"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+
+    <VBox spacing="16" alignment="CENTER"
+          style="-fx-background-color: #EDE8DC;
+                 -fx-border-color: #C8BFA8;
+                 -fx-border-width: 1;
+                 -fx-border-radius: 4;
+                 -fx-background-radius: 4;
+                 -fx-padding: 24;">
+        <HBox spacing="20">
+            <Label text="Folio:"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="folioLabel" text="----------"
+                   style="-fx-font-size: 14px; -fx-text-fill: #6B5A45;"/>
+        </HBox>
+        <HBox spacing="20">
+            <Label text="Total:"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="totalLabel" text="----------"
+                   style="-fx-font-size: 14px; -fx-text-fill: #6B5A45;"/>
+        </HBox>
+        <HBox spacing="20">
+            <Label text="Vendedor:"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="vendedorLabel" text="----------"
+                   style="-fx-font-size: 14px; -fx-text-fill: #6B5A45;"/>
+        </HBox>
+    </VBox>
+
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="PANEL PRINCIPAL"
+                onAction="#handlePanelPrincipal"
+                prefWidth="180" prefHeight="40"
+                style="-fx-background-color: #EDE8DC;
+                       -fx-border-color: #2B2118;
+                       -fx-border-width: 1;
+                       -fx-font-size: 13px;
+                       -fx-font-weight: bold;
+                       -fx-text-fill: #2B2118;
+                       -fx-cursor: hand;"/>
+        <Button text="REGISTRAR OTRA VENTA"
+                onAction="#handleRegistrarOtraVenta"
+                prefWidth="200" prefHeight="40"
+                style="-fx-background-color: #2B2118;
+                       -fx-text-fill: #F5F0E8;
+                       -fx-font-size: 13px;
+                       -fx-font-weight: bold;
+                       -fx-cursor: hand;"/>
+    </HBox>
+
+</VBox>

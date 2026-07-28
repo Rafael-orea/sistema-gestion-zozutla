@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.MainController"
+            prefWidth="900" prefHeight="600"
+            style="-fx-background-color: #F5F0E8;">
+
+    <left>
+        <VBox prefWidth="160"
+              style="-fx-background-color: #2B2118; -fx-padding: 20 0 0 0;">
+
+            <Button text="INICIO" onAction="#handleInicio" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="MOLDES" onAction="#handleMoldes" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="INVENTARIO" onAction="#handleInventario" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="VENTAS" onAction="#handleVentas" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="HISTORIAL VENTAS" onAction="#handleHistorialVentas" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 11px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="CLIENTES" onAction="#handleClientes" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="INSUMOS Y COSTOS" onAction="#handleInsumos" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 11px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+            <Button text="  - Catalogo" onAction="#handleInsumos" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #A09080; -fx-font-size: 11px; -fx-padding: 8 30; -fx-alignment: CENTER_LEFT;"/>
+            <Button text="  - Por Alcancia" onAction="#handleInsumoAlcancia" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #A09080; -fx-font-size: 11px; -fx-padding: 8 30; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="ENVIOS" onAction="#handleEnvios" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="REPORTES" onAction="#handleReportes" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Button text="EMPLEADOS" onAction="#handleEmpleados" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #D4C5A9; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Button text="CERRAR SESION" onAction="#handleLogout" maxWidth="Infinity"
+                    style="-fx-background-color: #5C3A1E; -fx-text-fill: #F5F0E8; -fx-font-size: 12px; -fx-padding: 14 20; -fx-alignment: CENTER_LEFT;"/>
+
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-background-color: #F5F0E8;"/>
+    </center>
+
+</BorderPane>
