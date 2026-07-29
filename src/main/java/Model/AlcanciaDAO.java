@@ -1,6 +1,7 @@
 package Model;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,23 +40,19 @@ public class AlcanciaDAO {
     }
 
     public boolean createAlcancia(Alcancia a) {
-        String query = "INSERT INTO alcancia (id_molde, nombre, descripcion, existencia, precio, estado) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO alcancia (id_molde, nombre, existencia, precio, precio_mayoreo, estado) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
-            // Si no tiene molde se guarda NULL
             if (a.getIdMolde() == 0) {
                 pstmt.setNull(1, Types.INTEGER);
             } else {
                 pstmt.setInt(1, a.getIdMolde());
             }
-
             pstmt.setString(2, a.getNombre());
-            pstmt.setString(3, a.getDescripcion());
-            pstmt.setInt(4, a.getExistencia());
-            pstmt.setDouble(5, a.getPrecio());
+            pstmt.setInt(3, a.getExistencia());
+            pstmt.setDouble(4, a.getPrecio());
+            pstmt.setDouble(5, a.getPrecioMayoreo());
             pstmt.setString(6, a.getEstado());
-
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -70,21 +67,18 @@ public class AlcanciaDAO {
     }
 
     public boolean updateAlcancia(Alcancia a) {
-        String query = "UPDATE alcancia SET id_molde=?, nombre=?, descripcion=?, existencia=?, precio=?, estado=? WHERE id_alcancia=?";
+        String query = "UPDATE alcancia SET id_molde=?, nombre=?, existencia=?, precio=?, precio_mayoreo=?, estado=? WHERE id_alcancia=?";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            // Si no tiene molde se guarda NULL
             if (a.getIdMolde() == 0) {
                 pstmt.setNull(1, Types.INTEGER);
             } else {
                 pstmt.setInt(1, a.getIdMolde());
             }
-
             pstmt.setString(2, a.getNombre());
-            pstmt.setString(3, a.getDescripcion());
-            pstmt.setInt(4, a.getExistencia());
-            pstmt.setDouble(5, a.getPrecio());
+            pstmt.setInt(3, a.getExistencia());
+            pstmt.setDouble(4, a.getPrecio());
+            pstmt.setDouble(5, a.getPrecioMayoreo());
             pstmt.setString(6, a.getEstado());
             pstmt.setInt(7, a.getId());
             return pstmt.executeUpdate() > 0;
@@ -106,15 +100,66 @@ public class AlcanciaDAO {
         return false;
     }
 
+    public boolean registrarMerma(int idAlcancia, int cantidad, boolean tieneArreglo, String motivo) {
+        Connection conn = null;
+        try {
+            conn = ConexionBD.conectar();
+            conn.setAutoCommit(false);
+
+            if (tieneArreglo) {
+                // Descontar de existencia normal y agregar a merma
+                String queryMerma = "UPDATE alcancia SET existencia = existencia - ?, existencia_merma = existencia_merma + ? WHERE id_alcancia = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(queryMerma)) {
+                    pstmt.setInt(1, cantidad);
+                    pstmt.setInt(2, cantidad);
+                    pstmt.setInt(3, idAlcancia);
+                    pstmt.executeUpdate();
+                }
+            } else {
+                // Descontar de existencia y registrar perdida
+                String queryExistencia = "UPDATE alcancia SET existencia = existencia - ? WHERE id_alcancia = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(queryExistencia)) {
+                    pstmt.setInt(1, cantidad);
+                    pstmt.setInt(2, idAlcancia);
+                    pstmt.executeUpdate();
+                }
+
+                String queryPerdida = "INSERT INTO perdida (id_alcancia, cantidad, motivo, fecha) VALUES (?, ?, ?, ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(queryPerdida)) {
+                    pstmt.setInt(1, idAlcancia);
+                    pstmt.setInt(2, cantidad);
+                    pstmt.setString(3, motivo);
+                    pstmt.setDate(4, Date.valueOf(LocalDate.now()));
+                    pstmt.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error registrarMerma: " + e.getMessage());
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException ex) {
+                System.err.println("Error rollback: " + ex.getMessage());
+            }
+            return false;
+        } finally {
+            try {
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error autocommit: " + e.getMessage());
+            }
+        }
+    }
+
     public List<Molde> getMoldesDisponibles() {
         List<Molde> moldes = new ArrayList<>();
-
-        // Primer elemento: Sin molde (por encargo)
         Molde sinMolde = new Molde();
         sinMolde.setId(0);
         sinMolde.setNombre("Sin molde (por encargo)");
         moldes.add(sinMolde);
-
         String query = "SELECT * FROM molde ORDER BY nombre";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query);
@@ -134,19 +179,17 @@ public class AlcanciaDAO {
     private Alcancia extraerAlcancia(ResultSet rs) throws SQLException {
         Alcancia a = new Alcancia();
         a.setId(rs.getInt("id_alcancia"));
-
-        // id_molde puede ser NULL
         int idMolde = rs.getInt("id_molde");
         if (rs.wasNull()) {
             a.setIdMolde(0);
         } else {
             a.setIdMolde(idMolde);
         }
-
         a.setNombre(rs.getString("nombre"));
-        a.setDescripcion(rs.getString("descripcion"));
         a.setExistencia(rs.getInt("existencia"));
+        a.setExistenciaMerma(rs.getInt("existencia_merma"));
         a.setPrecio(rs.getDouble("precio"));
+        a.setPrecioMayoreo(rs.getDouble("precio_mayoreo"));
         a.setEstado(rs.getString("estado"));
         return a;
     }

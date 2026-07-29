@@ -43,13 +43,15 @@
                       -fx-border-color: #C8BFA8;
                       -fx-border-width: 1;">
         <columns>
-            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="colNombre" text="NOMBRE" prefWidth="200"/>
-            <TableColumn fx:id="colExistencia" text="EXISTENCIAS" prefWidth="100"/>
-            <TableColumn fx:id="colPrecio" text="PRECIO UNITARIO" prefWidth="130"/>
-            <TableColumn fx:id="colDescripcion" text="DESCRIPCION" prefWidth="180"/>
-            <TableColumn fx:id="colEstado" text="ESTADO" prefWidth="100"/>
-            <TableColumn fx:id="colAcciones" text="ACCIONES" prefWidth="160"/>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="colNombre" text="NOMBRE" prefWidth="160"/>
+            <TableColumn fx:id="colExistencia" text="EXISTENCIAS" prefWidth="90"/>
+            <TableColumn fx:id="colPrecio" text="P. NORMAL" prefWidth="90"/>
+            <TableColumn fx:id="colPrecioMayoreo" text="P. MAYOREO" prefWidth="90"/>
+            <TableColumn fx:id="colPrecioEspecial" text="P. ESPECIAL" prefWidth="90"/>
+            <TableColumn fx:id="colMerma" text="MERMAS" prefWidth="70"/>
+            <TableColumn fx:id="colEstado" text="ESTADO" prefWidth="90"/>
+            <TableColumn fx:id="colAcciones" text="ACCIONES" prefWidth="200"/>
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
