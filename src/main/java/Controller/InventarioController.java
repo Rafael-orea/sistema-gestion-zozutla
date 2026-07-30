@@ -127,11 +127,13 @@ public class InventarioController {
             private final Button btnEditar = new Button("Editar");
             private final Button btnEliminar = new Button("Eliminar");
             private final Button btnMerma = new Button("Merma");
+            private final Button btnAgregar = new Button("+Stock");
 
             {
                 btnEditar.setStyle("-fx-background-color: #C8A96E; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
                 btnEliminar.setStyle("-fx-background-color: #8B4513; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
                 btnMerma.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
+                btnAgregar.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
 
                 btnEditar.setOnAction(e -> {
                     Alcancia a = getTableView().getItems().get(getIndex());
@@ -145,6 +147,10 @@ public class InventarioController {
                     Alcancia a = getTableView().getItems().get(getIndex());
                     mostrarDialogoMerma(a);
                 });
+                btnAgregar.setOnAction(e -> {
+                    Alcancia a = getTableView().getItems().get(getIndex());
+                    mostrarDialogoAgregarStock(a);
+                });
             }
 
             @Override
@@ -153,7 +159,7 @@ public class InventarioController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(4, btnEditar, btnMerma, btnEliminar);
+                    HBox box = new HBox(4, btnAgregar, btnEditar, btnMerma, btnEliminar);
                     box.setAlignment(Pos.CENTER);
                     setGraphic(box);
                 }
@@ -185,6 +191,7 @@ public class InventarioController {
         if (totalLabel != null)
             totalLabel.setText(String.valueOf(alcanciaList.size()));
     }
+
 
     @FXML
     private void handleAgregarAlcancia() {
@@ -299,6 +306,47 @@ public class InventarioController {
                 cargarAlcancias();
             } else {
                 showAlert("Error", "No se pudo guardar la alcancia.");
+            }
+        });
+    }
+    private void mostrarDialogoAgregarStock(Alcancia alcancia) {
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Agregar Stock");
+        dialog.setHeaderText("Agregar piezas a: " + alcancia.getNombre());
+
+        ButtonType guardarBtn = new ButtonType("Agregar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(guardarBtn, ButtonType.CANCEL);
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(12);
+        grid.setVgap(12);
+        grid.setStyle("-fx-padding: 20;");
+
+        Label stockActualLabel = new Label("Stock actual: " + alcancia.getExistencia() + " piezas");
+        stockActualLabel.setStyle("-fx-text-fill: #6B5A45; -fx-font-size: 13px;");
+
+        Spinner<Integer> cantidadSpinner = new Spinner<>(1, 99999, 1);
+        cantidadSpinner.setEditable(true);
+        cantidadSpinner.setPrefWidth(120);
+
+        grid.add(stockActualLabel, 0, 0, 2, 1);
+        grid.add(new Label("Piezas a agregar:"), 0, 1);
+        grid.add(cantidadSpinner, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == guardarBtn) return cantidadSpinner.getValue();
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(cantidad -> {
+            if (alcanciaDAO.agregarStock(alcancia.getId(), cantidad)) {
+                showAlert("Exito", cantidad + " piezas agregadas. Nuevo stock: " +
+                        (alcancia.getExistencia() + cantidad));
+                cargarAlcancias();
+            } else {
+                showAlert("Error", "No se pudo actualizar el stock.");
             }
         });
     }

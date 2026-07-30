@@ -65,6 +65,18 @@ public class AlcanciaDAO {
         }
         return false;
     }
+    public boolean agregarStock(int idAlcancia, int cantidad) {
+        String query = "UPDATE alcancia SET existencia = existencia + ?, estado = 'disponible' WHERE id_alcancia = ?";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, cantidad);
+            pstmt.setInt(2, idAlcancia);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error agregarStock: " + e.getMessage());
+        }
+        return false;
+    }
 
     public boolean updateAlcancia(Alcancia a) {
         String query = "UPDATE alcancia SET id_molde=?, nombre=?, existencia=?, precio=?, precio_mayoreo=?, estado=? WHERE id_alcancia=?";
