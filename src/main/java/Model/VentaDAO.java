@@ -17,13 +17,16 @@ public class VentaDAO {
             conn = ConexionBD.conectar();
             conn.setAutoCommit(false);
 
-            // Generar folio automatico
             String folio = "VTA-" + System.currentTimeMillis();
             venta.setFolio(folio);
 
-            // Insertar venta
             try (PreparedStatement pstmt = conn.prepareStatement(queryVenta, Statement.RETURN_GENERATED_KEYS)) {
-                pstmt.setInt(1, venta.getIdCliente());
+                // Si es comprador normal se guarda con id_cliente = 1 (cliente generico)
+                if (venta.isCompradorNormal() || venta.getIdCliente() == 0) {
+                    pstmt.setInt(1, 1);
+                } else {
+                    pstmt.setInt(1, venta.getIdCliente());
+                }
                 pstmt.setString(2, folio);
                 pstmt.setDate(3, Date.valueOf(venta.getFecha()));
                 pstmt.setDouble(4, venta.getTotal());
@@ -34,7 +37,6 @@ public class VentaDAO {
                 }
             }
 
-            // Insertar detalles y descontar inventario
             for (DetalleVenta detalle : venta.getDetalles()) {
                 try (PreparedStatement pstmt = conn.prepareStatement(queryDetalle)) {
                     pstmt.setInt(1, venta.getId());

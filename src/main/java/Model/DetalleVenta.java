@@ -7,6 +7,7 @@ public class DetalleVenta {
     private String nombreAlcancia;
     private int cantidad;
     private double precioUnitario;
+    private double descuento;
     private double subtotal;
 
     public DetalleVenta() {}
@@ -28,6 +29,9 @@ public class DetalleVenta {
 
     public double getPrecioUnitario() { return precioUnitario; }
     public void setPrecioUnitario(double precioUnitario) { this.precioUnitario = precioUnitario; }
+
+    public double getDescuento() { return descuento; }
+    public void setDescuento(double descuento) { this.descuento = descuento; }
 
     public double getSubtotal() { return subtotal; }
     public void setSubtotal(double subtotal) { this.subtotal = subtotal; }

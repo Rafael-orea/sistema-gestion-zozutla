@@ -1,10 +1,6 @@
 package Controller;
 
-import Model.Alcancia;
-import Model.Cliente;
-import Model.DetalleVenta;
-import Model.Venta;
-import Model.VentaDAO;
+import Model.*;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -22,34 +18,46 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import Model.AlcanciaDAO;
 
 public class VentaController {
 
+    @FXML private RadioButton rbNormal;
+    @FXML private RadioButton rbMayoreo;
     @FXML private TextField clienteSearchField;
     @FXML private ListView<Cliente> clienteListView;
     @FXML private Label clienteSeleccionadoLabel;
+    @FXML private Label descuentoLabel;
     @FXML private DatePicker fechaPicker;
     @FXML private TableView<DetalleVenta> detalleTable;
     @FXML private TableColumn<DetalleVenta, String> colProducto;
     @FXML private TableColumn<DetalleVenta, Integer> colCantidad;
     @FXML private TableColumn<DetalleVenta, Double> colPrecio;
+    @FXML private TableColumn<DetalleVenta, Double> colDescuento;
     @FXML private TableColumn<DetalleVenta, Double> colSubtotal;
     @FXML private TableColumn<DetalleVenta, Void> colEliminar;
     @FXML private Label totalLabel;
 
-    private VentaDAO ventaDAO = new VentaDAO();
     private AlcanciaDAO alcanciaDAO = new AlcanciaDAO();
+    private VentaDAO ventaDAO = new VentaDAO();
     private ObservableList<DetalleVenta> detalleList = FXCollections.observableArrayList();
-    private List<Alcancia> alcanciasDisponibles = new ArrayList<>();
+    private List<Alcancia> todasAlcancias = new ArrayList<>();
     private List<Cliente> todosClientes = new ArrayList<>();
-    private Cliente clienteActual;
+    private Cliente clienteActual = null;
+    private boolean esCompradorNormal = false;
     private boolean seleccionandoCliente = false;
+
+    private static final double DESCUENTO_CLIENTE = 0.15;
 
     @FXML
     public void initialize() {
         fechaPicker.setValue(LocalDate.now());
-        alcanciasDisponibles = alcanciaDAO.getAllAlcancias();
+
+        ToggleGroup grupo = new ToggleGroup();
+        rbNormal.setToggleGroup(grupo);
+        rbMayoreo.setToggleGroup(grupo);
+        rbNormal.setSelected(true);
+
+        todasAlcancias = alcanciaDAO.getAllAlcancias();
         todosClientes = ventaDAO.getClientesDisponibles();
         setupColumnas();
         setupBuscadorCliente();
@@ -67,7 +75,6 @@ public class VentaController {
             }
         });
 
-        // Filtro en tiempo real
         clienteSearchField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (seleccionandoCliente) return;
             ObservableList<Cliente> filtrados = FXCollections.observableArrayList();
@@ -80,22 +87,24 @@ public class VentaController {
             clienteListView.setItems(filtrados);
             clienteListView.setVisible(true);
             clienteListView.setManaged(true);
+            esCompradorNormal = false;
         });
 
-        // Al seleccionar cliente
         clienteListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, seleccionado) -> {
             if (seleccionado != null) {
                 seleccionandoCliente = true;
                 clienteActual = seleccionado;
-                clienteSeleccionadoLabel.setText("Cliente: " + seleccionado.getNombre() + " - " + seleccionado.getPais());
+                esCompradorNormal = false;
+                clienteSeleccionadoLabel.setText("Cliente: " + seleccionado.getNombre());
+                descuentoLabel.setText("15% de descuento aplicado");
                 clienteSearchField.setText(seleccionado.getNombre());
                 clienteListView.setVisible(false);
                 clienteListView.setManaged(false);
+                recalcularDetalles();
                 javafx.application.Platform.runLater(() -> seleccionandoCliente = false);
             }
         });
 
-        // Click en el campo
         clienteSearchField.setOnMouseClicked(e -> {
             seleccionandoCliente = false;
             clienteListView.setItems(clientesObs);
@@ -117,6 +126,18 @@ public class VentaController {
         clienteListView.setManaged(false);
     }
 
+    @FXML
+    private void handleCompradorNormal() {
+        clienteActual = null;
+        esCompradorNormal = true;
+        clienteSearchField.clear();
+        clienteListView.setVisible(false);
+        clienteListView.setManaged(false);
+        clienteSeleccionadoLabel.setText("Comprador normal (sin registro)");
+        descuentoLabel.setText("");
+        recalcularDetalles();
+    }
+
     private void setupColumnas() {
         colProducto.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getNombreAlcancia()));
@@ -126,21 +147,52 @@ public class VentaController {
 
         colPrecio.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecioUnitario()).asObject());
+        colPrecio.setCellFactory(col -> new TableCell<DetalleVenta, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) setText(null);
+                else setText(String.format("$%.2f", item));
+            }
+        });
+
+        colDescuento.setCellValueFactory(data ->
+                new SimpleDoubleProperty(data.getValue().getDescuento()).asObject());
+        colDescuento.setCellFactory(col -> new TableCell<DetalleVenta, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) setText(null);
+                else if (item > 0) {
+                    setText(String.format("-$%.2f", item));
+                    setStyle("-fx-text-fill: #27ae60;");
+                } else {
+                    setText("--");
+                    setStyle("");
+                }
+            }
+        });
 
         colSubtotal.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getSubtotal()).asObject());
+        colSubtotal.setCellFactory(col -> new TableCell<DetalleVenta, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) setText(null);
+                else setText(String.format("$%.2f", item));
+            }
+        });
 
         colEliminar.setCellFactory(col -> new TableCell<DetalleVenta, Void>() {
             private final Button btnEliminar = new Button("X");
             {
                 btnEliminar.setStyle("-fx-background-color: #8B4513; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
                 btnEliminar.setOnAction(e -> {
-                    DetalleVenta detalle = getTableView().getItems().get(getIndex());
-                    detalleList.remove(detalle);
+                    detalleList.remove(getTableView().getItems().get(getIndex()));
                     actualizarTotal();
                 });
             }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -151,13 +203,36 @@ public class VentaController {
         detalleTable.setItems(detalleList);
     }
 
+    private double getPrecioSegunTipo(Alcancia a) {
+        return rbMayoreo.isSelected() ? a.getPrecioMayoreo() : a.getPrecio();
+    }
+
+    private void recalcularDetalles() {
+        for (DetalleVenta d : detalleList) {
+            double descuento = clienteActual != null ? d.getPrecioUnitario() * DESCUENTO_CLIENTE * d.getCantidad() : 0;
+            d.setDescuento(descuento);
+            d.setSubtotal((d.getPrecioUnitario() * d.getCantidad()) - descuento);
+        }
+        detalleTable.refresh();
+        actualizarTotal();
+    }
+
     @FXML
     private void handleAgregarProducto() {
-        ObservableList<Alcancia> alcanciasObs = FXCollections.observableArrayList(alcanciasDisponibles);
+        if (clienteActual == null && !esCompradorNormal) {
+            showAlert("Error", "Selecciona un cliente o elige Comprador Normal primero.");
+            return;
+        }
+
+        ObservableList<Alcancia> alcanciasObs = FXCollections.observableArrayList(
+                todasAlcancias.stream()
+                        .filter(a -> a.getExistencia() > 0)
+                        .collect(java.util.stream.Collectors.toList())
+        );
 
         Dialog<DetalleVenta> dialog = new Dialog<>();
         dialog.setTitle("Agregar Producto");
-        dialog.setHeaderText("Selecciona una alcancia y la cantidad");
+        dialog.setHeaderText("Selecciona una alcancia");
 
         ButtonType agregarBtn = new ButtonType("Agregar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(agregarBtn, ButtonType.CANCEL);
@@ -179,12 +254,20 @@ public class VentaController {
             @Override
             protected void updateItem(Alcancia a, boolean empty) {
                 super.updateItem(a, empty);
-                setText(empty || a == null ? null : a.getNombre() + " (stock: " + a.getExistencia() + ")");
+                if (empty || a == null) setText(null);
+                else {
+                    double precio = getPrecioSegunTipo(a);
+                    setText(a.getNombre() + " | Stock: " + a.getExistencia() +
+                            " | $" + String.format("%.2f", precio));
+                }
             }
         });
 
-        Label precioLabel = new Label("0.00");
+        Label precioLabel = new Label("--");
         precioLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        Label descLabel = new Label("");
+        descLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
 
         Label stockLabel = new Label("Disponibles: 0");
         stockLabel.setStyle("-fx-text-fill: #6B5A45;");
@@ -198,8 +281,9 @@ public class VentaController {
                 listaView.setItems(alcanciasObs);
             } else {
                 ObservableList<Alcancia> filtradas = FXCollections.observableArrayList();
-                for (Alcancia a : alcanciasDisponibles) {
-                    if (a.getNombre().toLowerCase().contains(newVal.toLowerCase())) {
+                for (Alcancia a : todasAlcancias) {
+                    if (a.getExistencia() > 0 &&
+                            a.getNombre().toLowerCase().contains(newVal.toLowerCase())) {
                         filtradas.add(a);
                     }
                 }
@@ -209,8 +293,15 @@ public class VentaController {
 
         listaView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, seleccionada) -> {
             if (seleccionada != null) {
-                precioLabel.setText(String.valueOf(seleccionada.getPrecio()));
+                double precio = getPrecioSegunTipo(seleccionada);
+                precioLabel.setText(String.format("$%.2f", precio));
                 stockLabel.setText("Disponibles: " + seleccionada.getExistencia());
+                if (clienteActual != null) {
+                    double desc = precio * DESCUENTO_CLIENTE;
+                    descLabel.setText(String.format("Con descuento: $%.2f", precio - desc));
+                } else {
+                    descLabel.setText("");
+                }
             }
         });
 
@@ -220,10 +311,12 @@ public class VentaController {
         grid.add(listaView, 1, 1);
         grid.add(new Label("Precio:"), 0, 2);
         grid.add(precioLabel, 1, 2);
-        grid.add(new Label("Disponibles:"), 0, 3);
-        grid.add(stockLabel, 1, 3);
-        grid.add(new Label("Cantidad:"), 0, 4);
-        grid.add(cantidadSpinner, 1, 4);
+        grid.add(new Label("Precio con desc:"), 0, 3);
+        grid.add(descLabel, 1, 3);
+        grid.add(new Label("Stock:"), 0, 4);
+        grid.add(stockLabel, 1, 4);
+        grid.add(new Label("Cantidad:"), 0, 5);
+        grid.add(cantidadSpinner, 1, 5);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -231,21 +324,27 @@ public class VentaController {
             if (btn == agregarBtn) {
                 Alcancia seleccionada = listaView.getSelectionModel().getSelectedItem();
                 if (seleccionada == null) {
-                    showAlert("Error", "Selecciona una alcancia de la lista.");
+                    showAlert("Error", "Selecciona una alcancia.");
                     return null;
                 }
                 int cantidad = cantidadSpinner.getValue();
                 if (cantidad > seleccionada.getExistencia()) {
-                    showAlert("Error", "No hay suficiente stock. Disponibles: " + seleccionada.getExistencia());
+                    showAlert("Error", "Stock insuficiente. Disponibles: " + seleccionada.getExistencia());
                     return null;
                 }
-                DetalleVenta detalle = new DetalleVenta();
-                detalle.setIdAlcancia(seleccionada.getId());
-                detalle.setNombreAlcancia(seleccionada.getNombre());
-                detalle.setCantidad(cantidad);
-                detalle.setPrecioUnitario(seleccionada.getPrecio());
-                detalle.setSubtotal(seleccionada.getPrecio() * cantidad);
-                return detalle;
+
+                double precio = getPrecioSegunTipo(seleccionada);
+                double descuento = clienteActual != null ? precio * DESCUENTO_CLIENTE * cantidad : 0;
+                double subtotal = (precio * cantidad) - descuento;
+
+                DetalleVenta d = new DetalleVenta();
+                d.setIdAlcancia(seleccionada.getId());
+                d.setNombreAlcancia(seleccionada.getNombre());
+                d.setCantidad(cantidad);
+                d.setPrecioUnitario(precio);
+                d.setDescuento(descuento);
+                d.setSubtotal(subtotal);
+                return d;
             }
             return null;
         });
@@ -263,8 +362,8 @@ public class VentaController {
 
     @FXML
     private void handleRegistrarVenta() {
-        if (clienteActual == null) {
-            showAlert("Error", "Selecciona un cliente.");
+        if (clienteActual == null && !esCompradorNormal) {
+            showAlert("Error", "Selecciona un cliente o elige Comprador Normal.");
             return;
         }
         if (detalleList.isEmpty()) {
@@ -273,10 +372,12 @@ public class VentaController {
         }
 
         Venta venta = new Venta();
-        venta.setIdCliente(clienteActual.getId());
-        venta.setNombreCliente(clienteActual.getNombre());
+        venta.setIdCliente(clienteActual != null ? clienteActual.getId() : 0);
+        venta.setNombreCliente(clienteActual != null ? clienteActual.getNombre() : "Comprador Normal");
         venta.setFecha(fechaPicker.getValue());
         venta.setTotal(detalleList.stream().mapToDouble(DetalleVenta::getSubtotal).sum());
+        venta.setTipoPrecio(rbMayoreo.isSelected() ? "mayoreo" : "normal");
+        venta.setCompradorNormal(esCompradorNormal);
         venta.setDetalles(new ArrayList<>(detalleList));
 
         if (ventaDAO.registrarVenta(venta)) {
@@ -300,17 +401,24 @@ public class VentaController {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
 
-            clienteSearchField.clear();
-            clienteActual = null;
-            clienteSeleccionadoLabel.setText("Ningun cliente seleccionado");
-            fechaPicker.setValue(LocalDate.now());
-            detalleList.clear();
-            totalLabel.setText("0.00");
-            alcanciasDisponibles = alcanciaDAO.getAllAlcancias();
+            limpiarFormulario();
 
         } catch (IOException e) {
             showAlert("Error", "No se pudo abrir el detalle: " + e.getMessage());
         }
+    }
+
+    private void limpiarFormulario() {
+        clienteSearchField.clear();
+        clienteActual = null;
+        esCompradorNormal = false;
+        clienteSeleccionadoLabel.setText("Sin cliente seleccionado");
+        descuentoLabel.setText("");
+        fechaPicker.setValue(LocalDate.now());
+        detalleList.clear();
+        totalLabel.setText("0.00");
+        rbNormal.setSelected(true);
+        todasAlcancias = alcanciaDAO.getAllAlcancias();
     }
 
     @FXML
