@@ -8,7 +8,10 @@ public class DetalleVenta {
     private int cantidad;
     private double precioUnitario;
     private double descuento;
-    private double subtotal;
+    private double subtotal;private boolean esMerma;
+
+    public boolean isEsMerma() { return esMerma; }
+    public void setEsMerma(boolean esMerma) { this.esMerma = esMerma; }
 
     public DetalleVenta() {}
 

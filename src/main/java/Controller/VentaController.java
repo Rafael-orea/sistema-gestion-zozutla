@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.layout.HBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -224,12 +225,6 @@ public class VentaController {
             return;
         }
 
-        ObservableList<Alcancia> alcanciasObs = FXCollections.observableArrayList(
-                todasAlcancias.stream()
-                        .filter(a -> a.getExistencia() > 0)
-                        .collect(java.util.stream.Collectors.toList())
-        );
-
         Dialog<DetalleVenta> dialog = new Dialog<>();
         dialog.setTitle("Agregar Producto");
         dialog.setHeaderText("Selecciona una alcancia");
@@ -242,26 +237,38 @@ public class VentaController {
         grid.setVgap(12);
         grid.setStyle("-fx-padding: 20;");
 
+        // Selector tipo de producto
+        ToggleGroup tipoGrupo = new ToggleGroup();
+        RadioButton rbInventario = new RadioButton("Inventario normal");
+        RadioButton rbMerma = new RadioButton("Merma (mitad de precio)");
+        rbInventario.setToggleGroup(tipoGrupo);
+        rbMerma.setToggleGroup(tipoGrupo);
+        rbInventario.setSelected(true);
+        rbMerma.setStyle("-fx-text-fill: #e67e22;");
+
+        HBox tipoBox = new HBox(20, rbInventario, rbMerma);
+        tipoBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
         TextField buscarField = new TextField();
         buscarField.setPromptText("Escribe para buscar...");
         buscarField.setPrefWidth(280);
 
+        ObservableList<Alcancia> alcanciasNormales = FXCollections.observableArrayList(
+                todasAlcancias.stream()
+                        .filter(a -> a.getExistencia() > 0)
+                        .collect(java.util.stream.Collectors.toList())
+        );
+
+        ObservableList<Alcancia> alcanciasConMerma = FXCollections.observableArrayList(
+                todasAlcancias.stream()
+                        .filter(a -> a.getExistenciaMerma() > 0)
+                        .collect(java.util.stream.Collectors.toList())
+        );
+
         ListView<Alcancia> listaView = new ListView<>();
         listaView.setPrefHeight(140);
         listaView.setPrefWidth(280);
-        listaView.setItems(alcanciasObs);
-        listaView.setCellFactory(lv -> new ListCell<Alcancia>() {
-            @Override
-            protected void updateItem(Alcancia a, boolean empty) {
-                super.updateItem(a, empty);
-                if (empty || a == null) setText(null);
-                else {
-                    double precio = getPrecioSegunTipo(a);
-                    setText(a.getNombre() + " | Stock: " + a.getExistencia() +
-                            " | $" + String.format("%.2f", precio));
-                }
-            }
-        });
+        listaView.setItems(alcanciasNormales);
 
         Label precioLabel = new Label("--");
         precioLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
@@ -276,14 +283,30 @@ public class VentaController {
         cantidadSpinner.setPrefWidth(100);
         cantidadSpinner.setEditable(true);
 
+        // Cambiar lista al cambiar tipo
+        tipoGrupo.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            buscarField.clear();
+            if (rbMerma.isSelected()) {
+                listaView.setItems(alcanciasConMerma);
+            } else {
+                listaView.setItems(alcanciasNormales);
+            }
+            precioLabel.setText("--");
+            stockLabel.setText("Disponibles: 0");
+            descLabel.setText("");
+        });
+
+        // Filtro en tiempo real
         buscarField.textProperty().addListener((obs, oldVal, newVal) -> {
+            boolean esMerma = rbMerma.isSelected();
+            ObservableList<Alcancia> base = esMerma ? alcanciasConMerma : alcanciasNormales;
             if (newVal == null || newVal.isEmpty()) {
-                listaView.setItems(alcanciasObs);
+                listaView.setItems(base);
             } else {
                 ObservableList<Alcancia> filtradas = FXCollections.observableArrayList();
                 for (Alcancia a : todasAlcancias) {
-                    if (a.getExistencia() > 0 &&
-                            a.getNombre().toLowerCase().contains(newVal.toLowerCase())) {
+                    boolean tieneStock = esMerma ? a.getExistenciaMerma() > 0 : a.getExistencia() > 0;
+                    if (tieneStock && a.getNombre().toLowerCase().contains(newVal.toLowerCase())) {
                         filtradas.add(a);
                     }
                 }
@@ -291,32 +314,59 @@ public class VentaController {
             }
         });
 
+        // Al seleccionar alcancia
         listaView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, seleccionada) -> {
             if (seleccionada != null) {
-                double precio = getPrecioSegunTipo(seleccionada);
+                boolean esMerma = rbMerma.isSelected();
+                double precio = esMerma
+                        ? getPrecioSegunTipo(seleccionada) * 0.5
+                        : getPrecioSegunTipo(seleccionada);
+                int stock = esMerma ? seleccionada.getExistenciaMerma() : seleccionada.getExistencia();
+
                 precioLabel.setText(String.format("$%.2f", precio));
-                stockLabel.setText("Disponibles: " + seleccionada.getExistencia());
+                stockLabel.setText("Disponibles: " + stock);
+
                 if (clienteActual != null) {
                     double desc = precio * DESCUENTO_CLIENTE;
                     descLabel.setText(String.format("Con descuento: $%.2f", precio - desc));
                 } else {
-                    descLabel.setText("");
+                    descLabel.setText(esMerma ? "Precio de merma (50%)" : "");
                 }
             }
         });
 
-        grid.add(new Label("Buscar:"), 0, 0);
-        grid.add(buscarField, 1, 0);
-        grid.add(new Label("Alcancia:"), 0, 1);
-        grid.add(listaView, 1, 1);
-        grid.add(new Label("Precio:"), 0, 2);
-        grid.add(precioLabel, 1, 2);
-        grid.add(new Label("Precio con desc:"), 0, 3);
-        grid.add(descLabel, 1, 3);
-        grid.add(new Label("Stock:"), 0, 4);
-        grid.add(stockLabel, 1, 4);
-        grid.add(new Label("Cantidad:"), 0, 5);
-        grid.add(cantidadSpinner, 1, 5);
+        // Celda de la lista
+        listaView.setCellFactory(lv -> new ListCell<Alcancia>() {
+            @Override
+            protected void updateItem(Alcancia a, boolean empty) {
+                super.updateItem(a, empty);
+                if (empty || a == null) {
+                    setText(null);
+                } else {
+                    boolean esMerma = rbMerma.isSelected();
+                    double precio = esMerma
+                            ? getPrecioSegunTipo(a) * 0.5
+                            : getPrecioSegunTipo(a);
+                    int stock = esMerma ? a.getExistenciaMerma() : a.getExistencia();
+                    setText(a.getNombre() + " | Stock: " + stock +
+                            " | $" + String.format("%.2f", precio));
+                }
+            }
+        });
+
+        grid.add(tipoBox, 0, 0, 2, 1);
+        grid.add(new Label("Buscar:"), 0, 1);
+        grid.add(buscarField, 1, 1);
+        grid.add(new Label("Alcancia:"), 0, 2);
+        grid.add(listaView, 1, 2);
+        grid.add(new Label("Precio:"), 0, 3);
+        grid.add(precioLabel, 1, 3);
+        grid.add(new Label("Precio con desc:"), 0, 4);
+        grid.add(descLabel, 1, 4);
+        grid.add(new Label("Stock:"), 0, 5);
+        grid.add(stockLabel, 1, 5);
+        grid.add(new Label("Cantidad:"), 0, 6);
+        grid.add(cantidadSpinner, 1, 6);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -327,23 +377,30 @@ public class VentaController {
                     showAlert("Error", "Selecciona una alcancia.");
                     return null;
                 }
+
+                boolean esMerma = rbMerma.isSelected();
+                int stock = esMerma ? seleccionada.getExistenciaMerma() : seleccionada.getExistencia();
                 int cantidad = cantidadSpinner.getValue();
-                if (cantidad > seleccionada.getExistencia()) {
-                    showAlert("Error", "Stock insuficiente. Disponibles: " + seleccionada.getExistencia());
+
+                if (cantidad > stock) {
+                    showAlert("Error", "Stock insuficiente. Disponibles: " + stock);
                     return null;
                 }
 
-                double precio = getPrecioSegunTipo(seleccionada);
+                double precio = esMerma
+                        ? getPrecioSegunTipo(seleccionada) * 0.5
+                        : getPrecioSegunTipo(seleccionada);
                 double descuento = clienteActual != null ? precio * DESCUENTO_CLIENTE * cantidad : 0;
                 double subtotal = (precio * cantidad) - descuento;
 
                 DetalleVenta d = new DetalleVenta();
                 d.setIdAlcancia(seleccionada.getId());
-                d.setNombreAlcancia(seleccionada.getNombre());
+                d.setNombreAlcancia(seleccionada.getNombre() + (esMerma ? " (merma)" : ""));
                 d.setCantidad(cantidad);
                 d.setPrecioUnitario(precio);
                 d.setDescuento(descuento);
                 d.setSubtotal(subtotal);
+                d.setEsMerma(esMerma);
                 return d;
             }
             return null;

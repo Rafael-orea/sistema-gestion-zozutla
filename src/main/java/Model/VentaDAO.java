@@ -10,7 +10,6 @@ public class VentaDAO {
     public boolean registrarVenta(Venta venta) {
         String queryVenta = "INSERT INTO venta (id_usuario, id_cliente, folio, fecha, total) VALUES (1, ?, ?, ?, ?)";
         String queryDetalle = "INSERT INTO detalle_venta (id_venta, id_alcancia, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
-        String queryInventario = "UPDATE alcancia SET existencia = existencia - ? WHERE id_alcancia = ?";
 
         Connection conn = null;
         try {
@@ -20,8 +19,8 @@ public class VentaDAO {
             String folio = "VTA-" + System.currentTimeMillis();
             venta.setFolio(folio);
 
+            // Insertar venta
             try (PreparedStatement pstmt = conn.prepareStatement(queryVenta, Statement.RETURN_GENERATED_KEYS)) {
-                // Si es comprador normal se guarda con id_cliente = 1 (cliente generico)
                 if (venta.isCompradorNormal() || venta.getIdCliente() == 0) {
                     pstmt.setInt(1, 1);
                 } else {
@@ -37,7 +36,10 @@ public class VentaDAO {
                 }
             }
 
+            // Insertar detalles y descontar inventario
             for (DetalleVenta detalle : venta.getDetalles()) {
+
+                // Insertar detalle
                 try (PreparedStatement pstmt = conn.prepareStatement(queryDetalle)) {
                     pstmt.setInt(1, venta.getId());
                     pstmt.setInt(2, detalle.getIdAlcancia());
@@ -47,9 +49,25 @@ public class VentaDAO {
                     pstmt.executeUpdate();
                 }
 
-                try (PreparedStatement pstmt = conn.prepareStatement(queryInventario)) {
+                // Descontar del inventario correcto
+                String queryInv = detalle.isEsMerma()
+                        ? "UPDATE alcancia SET existencia_merma = existencia_merma - ? WHERE id_alcancia = ?"
+                        : "UPDATE alcancia SET existencia = existencia - ? WHERE id_alcancia = ?";
+
+                try (PreparedStatement pstmt = conn.prepareStatement(queryInv)) {
                     pstmt.setInt(1, detalle.getCantidad());
                     pstmt.setInt(2, detalle.getIdAlcancia());
+                    pstmt.executeUpdate();
+                }
+
+                // Actualizar estado si se agota
+                String queryEstado =
+                        "UPDATE alcancia SET estado = CASE " +
+                                "WHEN existencia = 0 AND existencia_merma = 0 THEN 'agotado' " +
+                                "ELSE 'disponible' END " +
+                                "WHERE id_alcancia = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(queryEstado)) {
+                    pstmt.setInt(1, detalle.getIdAlcancia());
                     pstmt.executeUpdate();
                 }
             }
@@ -74,6 +92,28 @@ public class VentaDAO {
         }
     }
 
+    public List<Alcancia> getAlcanciasDisponibles() {
+        List<Alcancia> lista = new ArrayList<>();
+        String query = "SELECT * FROM alcancia WHERE existencia > 0 ORDER BY nombre";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                Alcancia a = new Alcancia();
+                a.setId(rs.getInt("id_alcancia"));
+                a.setNombre(rs.getString("nombre"));
+                a.setPrecio(rs.getDouble("precio"));
+                a.setPrecioMayoreo(rs.getDouble("precio_mayoreo"));
+                a.setExistencia(rs.getInt("existencia"));
+                a.setExistenciaMerma(rs.getInt("existencia_merma"));
+                lista.add(a);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getAlcanciasDisponibles: " + e.getMessage());
+        }
+        return lista;
+    }
+
     public List<Cliente> getClientesDisponibles() {
         List<Cliente> lista = new ArrayList<>();
         String query = "SELECT * FROM cliente ORDER BY nombre";
@@ -85,6 +125,7 @@ public class VentaDAO {
                 c.setId(rs.getInt("id_cliente"));
                 c.setNombre(rs.getString("nombre"));
                 c.setPais(rs.getString("pais"));
+                c.setTipo(rs.getString("tipo"));
                 lista.add(c);
             }
         } catch (SQLException e) {
