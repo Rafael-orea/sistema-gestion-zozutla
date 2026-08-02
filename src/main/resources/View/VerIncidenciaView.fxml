@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controller.VerIncidenciaController"
+      spacing="16"
+      prefWidth="800" prefHeight="500"
+      style="-fx-padding: 24; -fx-background-color: #F5F0E8;">
+
+    <Label text="DETALLE DE INCIDENCIAS"
+           style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+
+    <HBox spacing="20">
+        <HBox spacing="8">
+            <Label text="Folio:" style="-fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="folioLabel" text="----------" style="-fx-text-fill: #6B5A45;"/>
+        </HBox>
+        <HBox spacing="8">
+            <Label text="Cliente:" style="-fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="clienteLabel" text="----------" style="-fx-text-fill: #6B5A45;"/>
+        </HBox>
+    </HBox>
+
+    <TableView fx:id="incidenciaTable" VBox.vgrow="ALWAYS"
+               style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1;">
+        <columns>
+            <TableColumn fx:id="colProducto" text="PRODUCTO" prefWidth="150"/>
+            <TableColumn fx:id="colFaltantes" text="FALTANTES" prefWidth="80"/>
+            <TableColumn fx:id="colRotas" text="ROTAS" prefWidth="70"/>
+            <TableColumn fx:id="colTotal" text="TOTAL" prefWidth="60"/>
+            <TableColumn fx:id="colResponsabilidad" text="RESPONSABILIDAD" prefWidth="120"/>
+            <TableColumn fx:id="colPctCliente" text="PCT CLIENTE" prefWidth="90"/>
+            <TableColumn fx:id="colPctZozutla" text="PCT ZOZUTLA" prefWidth="90"/>
+            <TableColumn fx:id="colDescripcion" text="DESCRIPCION" prefWidth="150"/>
+            <TableColumn fx:id="colFecha" text="FECHA" prefWidth="100"/>
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+    </TableView>
+
+</VBox>

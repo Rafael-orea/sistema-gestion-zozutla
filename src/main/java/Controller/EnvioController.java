@@ -84,10 +84,12 @@ public class EnvioController {
         colAcciones.setCellFactory(col -> new TableCell<Envio, Void>() {
             private final Button btnEntregado = new Button("Entregado");
             private final Button btnIncidencia = new Button("Incidencia");
+            private final Button btnVerIncidencia = new Button("Ver incidencia");
 
             {
-                btnEntregado.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
-                btnIncidencia.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
+                btnEntregado.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 10px; -fx-padding: 4 6; -fx-cursor: hand;");
+                btnIncidencia.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 10px; -fx-padding: 4 6; -fx-cursor: hand;");
+                btnVerIncidencia.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 10px; -fx-padding: 4 6; -fx-cursor: hand;");
 
                 btnEntregado.setOnAction(e -> {
                     Envio envio = getTableView().getItems().get(getIndex());
@@ -98,6 +100,11 @@ public class EnvioController {
                     Envio envio = getTableView().getItems().get(getIndex());
                     abrirIncidencia(envio);
                 });
+
+                btnVerIncidencia.setOnAction(e -> {
+                    Envio envio = getTableView().getItems().get(getIndex());
+                    verIncidencias(envio);
+                });
             }
 
             @Override
@@ -106,7 +113,7 @@ public class EnvioController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(6, btnEntregado, btnIncidencia);
+                    HBox box = new HBox(4, btnEntregado, btnIncidencia, btnVerIncidencia);
                     box.setAlignment(Pos.CENTER);
                     setGraphic(box);
                 }
@@ -197,6 +204,24 @@ public class EnvioController {
             cargarEnvios();
         } catch (IOException e) {
             showAlert("Error", "No se pudo abrir la incidencia: " + e.getMessage());
+        }
+    }
+
+    private void verIncidencias(Envio envio) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/VerIncidenciaView.fxml"));
+            Parent root = loader.load();
+
+            VerIncidenciaController controller = loader.getController();
+            controller.setEnvio(envio);
+
+            Stage stage = new Stage();
+            stage.setTitle("Incidencias - " + envio.getFolio());
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Error", "No se pudo abrir las incidencias: " + e.getMessage());
         }
     }
 

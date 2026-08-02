@@ -10,12 +10,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import java.io.IOException;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,6 +26,8 @@ public class ReportarEnvioController {
     @FXML private Label clienteLabel;
     @FXML private TextField destinoField;
     @FXML private DatePicker fechaPicker;
+    @FXML private RadioButton rbZozutla;
+    @FXML private RadioButton rbCliente;
     @FXML private TableView<DetalleVenta> productosTable;
     @FXML private TableColumn<DetalleVenta, String> colProducto;
     @FXML private TableColumn<DetalleVenta, Integer> colCantidad;
@@ -40,6 +42,12 @@ public class ReportarEnvioController {
     @FXML
     public void initialize() {
         fechaPicker.setValue(LocalDate.now());
+
+        ToggleGroup fleteGrupo = new ToggleGroup();
+        rbZozutla.setToggleGroup(fleteGrupo);
+        rbCliente.setToggleGroup(fleteGrupo);
+        rbCliente.setSelected(true);
+
         setupColumnas();
         cargarFolios();
     }
@@ -58,7 +66,6 @@ public class ReportarEnvioController {
             }
         });
 
-        // Filtro en tiempo real
         folioSearchField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (seleccionando) return;
             ObservableList<Venta> filtradas = FXCollections.observableArrayList();
@@ -74,7 +81,6 @@ public class ReportarEnvioController {
             folioListView.setManaged(true);
         });
 
-        // Al seleccionar de la lista
         folioListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, seleccionada) -> {
             if (seleccionada != null) {
                 seleccionando = true;
@@ -84,7 +90,6 @@ public class ReportarEnvioController {
                 folioListView.setVisible(false);
                 folioListView.setManaged(false);
 
-                // Cargar productos
                 List<DetalleVenta> productos = envioDAO.getProductosDeVenta(seleccionada.getId());
                 productosList.clear();
                 productosList.addAll(productos);
@@ -93,7 +98,6 @@ public class ReportarEnvioController {
             }
         });
 
-        // Click en el campo
         folioSearchField.setOnMouseClicked(e -> {
             seleccionando = false;
             folioListView.setItems(ventasObs);
@@ -111,7 +115,6 @@ public class ReportarEnvioController {
             }
         });
 
-        // Inicialmente oculta
         folioListView.setVisible(false);
         folioListView.setManaged(false);
     }
@@ -123,7 +126,6 @@ public class ReportarEnvioController {
                 new SimpleIntegerProperty(data.getValue().getCantidad()).asObject());
         colPrecio.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecioUnitario()).asObject());
-
         productosTable.setItems(productosList);
     }
 
@@ -142,10 +144,10 @@ public class ReportarEnvioController {
         envio.setIdVenta(ventaActual.getId());
         envio.setDestino(destinoField.getText().trim());
         envio.setFecha(fechaPicker.getValue());
+        envio.setFlete(rbZozutla.isSelected() ? "zozutla" : "cliente");
 
         if (envioDAO.registrarEnvio(envio)) {
             showAlert("Exito", "Envio registrado correctamente.");
-            // Regresar al historial
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/EnvioView.fxml"));
                 Parent root = loader.load();

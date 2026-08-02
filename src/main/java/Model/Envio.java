@@ -12,6 +12,8 @@ public class Envio {
     private LocalDate fecha;
     private String estado;
     private String productos;
+    private String flete;
+
 
     public Envio() {}
 
@@ -41,4 +43,7 @@ public class Envio {
 
     public String getProductos() { return productos; }
     public void setProductos(String productos) { this.productos = productos; }
+
+    public String getFlete() { return flete; }
+    public void setFlete(String flete) { this.flete = flete; }
 }

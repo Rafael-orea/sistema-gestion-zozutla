@@ -10,7 +10,7 @@ public class EnvioDAO {
     public List<Envio> getAllEnvios() {
         List<Envio> lista = new ArrayList<>();
         String query =
-                "SELECT e.id_envio, e.destino, e.fecha, e.estado, " +
+                "SELECT e.id_envio, e.id_venta, e.destino, e.fecha, e.estado, e.flete, "  +
                         "v.folio, c.nombre as cliente " +
                         "FROM envio e " +
                         "JOIN venta v ON e.id_venta = v.id_venta " +
@@ -31,7 +31,7 @@ public class EnvioDAO {
     public List<Envio> searchEnvios(LocalDate fecha, String idCliente) {
         List<Envio> lista = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-                "SELECT e.id_envio, e.destino, e.fecha, e.estado, " +
+                "SELECT e.id_envio, e.destino, e.fecha, e.estado, e.flete, " +
                         "v.folio, c.nombre as cliente " +
                         "FROM envio e " +
                         "JOIN venta v ON e.id_venta = v.id_venta " +
@@ -67,12 +67,13 @@ public class EnvioDAO {
     }
 
     public boolean registrarEnvio(Envio envio) {
-        String query = "INSERT INTO envio (id_venta, id_usuario, destino, fecha, estado) VALUES (?, 1, ?, ?, 'en_proceso')";
+        String query = "INSERT INTO envio (id_venta, id_usuario, destino, fecha, estado, flete) VALUES (?, 1, ?, ?, 'en_proceso', ?)";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, envio.getIdVenta());
             pstmt.setString(2, envio.getDestino());
             pstmt.setDate(3, Date.valueOf(envio.getFecha()));
+            pstmt.setString(4, envio.getFlete());
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -172,9 +173,11 @@ public class EnvioDAO {
         Envio e = new Envio();
         e.setId(rs.getInt("id_envio"));
         e.setFolio(rs.getString("folio"));
+        e.setIdVenta(rs.getInt("id_venta"));
         e.setCliente(rs.getString("cliente"));
         e.setDestino(rs.getString("destino"));
         e.setEstado(rs.getString("estado"));
+        e.setFlete(rs.getString("flete"));
         Date fecha = rs.getDate("fecha");
         if (fecha != null) e.setFecha(fecha.toLocalDate());
         return e;

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -14,13 +15,12 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="Controller.ReportarEnvioController"
       spacing="16"
-      prefWidth="700" prefHeight="650"
+      prefWidth="700" prefHeight="700"
       style="-fx-padding: 30; -fx-background-color: #F5F0E8;">
 
     <Label text="REPORTAR ENVIO"
            style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
 
-    <!-- Buscador de folio -->
     <HBox spacing="12" alignment="CENTER_LEFT">
         <Label text="VENTA:"
                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
@@ -34,7 +34,7 @@
     </HBox>
 
     <ListView fx:id="folioListView"
-              prefHeight="110"
+              prefHeight="100"
               style="-fx-background-color: #EDE8DC;
                      -fx-border-color: #C0B090;
                      -fx-border-width: 1;"/>
@@ -63,6 +63,24 @@
                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
         <DatePicker fx:id="fechaPicker" prefWidth="200"/>
     </HBox>
+
+    <!-- Flete -->
+    <VBox spacing="8"
+          style="-fx-background-color: #EDE8DC;
+                 -fx-border-color: #C0B090;
+                 -fx-border-width: 1;
+                 -fx-padding: 12;
+                 -fx-background-radius: 4;
+                 -fx-border-radius: 4;">
+        <Label text="FLETE:"
+               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+        <HBox spacing="30">
+            <RadioButton fx:id="rbZozutla" text="Zozutla lo lleva"
+                         style="-fx-font-size: 13px; -fx-text-fill: #2B2118;"/>
+            <RadioButton fx:id="rbCliente" text="Cliente lo recoge"
+                         style="-fx-font-size: 13px; -fx-text-fill: #2B2118;"/>
+        </HBox>
+    </VBox>
 
     <Label text="PRODUCTOS DE LA VENTA:"
            style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
