@@ -20,38 +20,81 @@ import java.util.Optional;
 public class InventarioController {
 
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> filtroEstado;
     @FXML private TableView<Alcancia> alcanciaTable;
     @FXML private TableColumn<Alcancia, Integer> colId;
     @FXML private TableColumn<Alcancia, String> colNombre;
     @FXML private TableColumn<Alcancia, Integer> colExistencia;
     @FXML private TableColumn<Alcancia, Double> colPrecio;
     @FXML private TableColumn<Alcancia, Double> colPrecioMayoreo;
-    @FXML private TableColumn<Alcancia, Double> colPrecioEspecial;
+    @FXML private TableColumn<Alcancia, Double> colCostoProduccion;
     @FXML private TableColumn<Alcancia, Integer> colMerma;
     @FXML private TableColumn<Alcancia, String> colEstado;
     @FXML private TableColumn<Alcancia, Void> colAcciones;
     @FXML private Label totalLabel;
+    @FXML private Label agotadasLabel;
+    @FXML private Label stockBajoLabel;
 
+    private static final int STOCK_BAJO = 8;
     private AlcanciaDAO alcanciaDAO = new AlcanciaDAO();
     private ObservableList<Alcancia> alcanciaList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+        filtroEstado.setItems(FXCollections.observableArrayList(
+                "Todos", "Disponible", "Agotado", "Stock Bajo"
+        ));
+        filtroEstado.setValue("Todos");
+
         setupColumnas();
         cargarAlcancias();
-        setupBuscador();
+        setupFiltros();
+    }
+
+    private void setupFiltros() {
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
+        filtroEstado.valueProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
+    }
+
+    private void aplicarFiltros() {
+        String termino = searchField.getText().trim();
+        String estado = filtroEstado.getValue();
+        if (estado == null || estado.equals("Todos")) estado = "";
+
+        alcanciaList.clear();
+        alcanciaList.addAll(alcanciaDAO.getAlcanciasFiltradas(termino, estado));
+        actualizarContadores();
     }
 
     private void setupColumnas() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+
         colExistencia.setCellValueFactory(new PropertyValueFactory<>("existencia"));
+        colExistencia.setCellFactory(col -> new TableCell<Alcancia, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(String.valueOf(item));
+                    if (item == 0) {
+                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                    } else if (item <= STOCK_BAJO) {
+                        setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
 
         colPrecio.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecio()).asObject());
         colPrecio.setCellFactory(col -> new TableCell<Alcancia, Double>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
+            @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText(null);
                 else setText(String.format("$%.2f", item));
@@ -61,34 +104,35 @@ public class InventarioController {
         colPrecioMayoreo.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getPrecioMayoreo()).asObject());
         colPrecioMayoreo.setCellFactory(col -> new TableCell<Alcancia, Double>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
+            @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText(null);
                 else setText(String.format("$%.2f", item));
             }
         });
 
-        colPrecioEspecial.setCellValueFactory(data ->
-                new SimpleDoubleProperty(data.getValue().getPrecioEspecial()).asObject());
-        colPrecioEspecial.setCellFactory(col -> new TableCell<Alcancia, Double>() {
-            @Override
-            protected void updateItem(Double item, boolean empty) {
+        colCostoProduccion.setCellValueFactory(data ->
+                new SimpleDoubleProperty(data.getValue().getCostoProduccion()).asObject());
+        colCostoProduccion.setCellFactory(col -> new TableCell<Alcancia, Double>() {
+            @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) setText(null);
-                else setText(String.format("$%.2f", item));
+                else if (item == 0) {
+                    setText("Sin registro");
+                    setStyle("-fx-text-fill: #8B7A65; -fx-font-style: italic;");
+                } else {
+                    setText(String.format("$%.2f", item));
+                    setStyle("");
+                }
             }
         });
 
         colMerma.setCellValueFactory(new PropertyValueFactory<>("existenciaMerma"));
         colMerma.setCellFactory(col -> new TableCell<Alcancia, Integer>() {
-            @Override
-            protected void updateItem(Integer item, boolean empty) {
+            @Override protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
+                if (empty || item == null) { setText(null); setStyle(""); }
+                else {
                     setText(String.valueOf(item));
                     if (item > 0) setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
                     else setStyle("");
@@ -98,58 +142,52 @@ public class InventarioController {
 
         colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colEstado.setCellFactory(col -> new TableCell<Alcancia, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
+            @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    switch (item) {
-                        case "disponible" -> {
-                            setText("Disponible");
-                            setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                        }
-                        case "agotado" -> {
-                            setText("Agotado");
-                            setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                        }
-                        default -> {
-                            setText(item);
-                            setStyle("");
-                        }
+                if (empty || item == null) { setText(null); setStyle(""); }
+                else {
+                    Alcancia a = getTableView().getItems().get(getIndex());
+                    if (item.equals("agotado")) {
+                        setText("Agotado");
+                        setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                    } else if (a.getExistencia() <= STOCK_BAJO && a.getExistencia() > 0) {
+                        setText("Stock Bajo");
+                        setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+                    } else {
+                        setText("Disponible");
+                        setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
                     }
                 }
             }
         });
 
         colAcciones.setCellFactory(col -> new TableCell<Alcancia, Void>() {
+            private final Button btnAgregar = new Button("+Stock");
             private final Button btnEditar = new Button("Editar");
             private final Button btnEliminar = new Button("Eliminar");
             private final Button btnMerma = new Button("Merma");
-            private final Button btnAgregar = new Button("+Stock");
 
             {
-                btnEditar.setStyle("-fx-background-color: #C8A96E; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
-                btnEliminar.setStyle("-fx-background-color: #8B4513; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
-                btnMerma.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
-                btnAgregar.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 8; -fx-cursor: hand;");
+                btnAgregar.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 6; -fx-cursor: hand;");
+                btnEditar.setStyle("-fx-background-color: #C8A96E; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 6; -fx-cursor: hand;");
+                btnMerma.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 6; -fx-cursor: hand;");
+                btnEliminar.setStyle("-fx-background-color: #8B4513; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 4 6; -fx-cursor: hand;");
 
+                btnAgregar.setOnAction(e -> {
+                    Alcancia a = getTableView().getItems().get(getIndex());
+                    mostrarDialogoAgregarStock(a);
+                });
                 btnEditar.setOnAction(e -> {
                     Alcancia a = getTableView().getItems().get(getIndex());
                     mostrarDialogo(a);
-                });
-                btnEliminar.setOnAction(e -> {
-                    Alcancia a = getTableView().getItems().get(getIndex());
-                    eliminarAlcancia(a);
                 });
                 btnMerma.setOnAction(e -> {
                     Alcancia a = getTableView().getItems().get(getIndex());
                     mostrarDialogoMerma(a);
                 });
-                btnAgregar.setOnAction(e -> {
+                btnEliminar.setOnAction(e -> {
                     Alcancia a = getTableView().getItems().get(getIndex());
-                    mostrarDialogoAgregarStock(a);
+                    eliminarAlcancia(a);
                 });
             }
 
@@ -171,27 +209,15 @@ public class InventarioController {
 
     private void cargarAlcancias() {
         alcanciaList.clear();
-        alcanciaList.addAll(alcanciaDAO.getAllAlcancias());
-        actualizarTotal();
+        alcanciaList.addAll(alcanciaDAO.getAlcanciasFiltradas("", ""));
+        actualizarContadores();
     }
 
-    private void setupBuscador() {
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.isEmpty()) {
-                cargarAlcancias();
-            } else {
-                alcanciaList.clear();
-                alcanciaList.addAll(alcanciaDAO.searchAlcancias(newVal));
-                actualizarTotal();
-            }
-        });
+    private void actualizarContadores() {
+        totalLabel.setText(String.valueOf(alcanciaList.size()));
+        agotadasLabel.setText(String.valueOf(alcanciaDAO.countAgotadas()));
+        stockBajoLabel.setText(String.valueOf(alcanciaDAO.countStockBajo()));
     }
-
-    private void actualizarTotal() {
-        if (totalLabel != null)
-            totalLabel.setText(String.valueOf(alcanciaList.size()));
-    }
-
 
     @FXML
     private void handleAgregarAlcancia() {
@@ -217,10 +243,8 @@ public class InventarioController {
         ComboBox<Molde> moldeCombo = new ComboBox<>();
         moldeCombo.setItems(FXCollections.observableArrayList(moldes));
         moldeCombo.setConverter(new javafx.util.StringConverter<Molde>() {
-            @Override
-            public String toString(Molde m) { return m == null ? "" : m.getNombre(); }
-            @Override
-            public Molde fromString(String s) { return null; }
+            @Override public String toString(Molde m) { return m == null ? "" : m.getNombre(); }
+            @Override public Molde fromString(String s) { return null; }
         });
         moldeCombo.setPrefWidth(280);
 
@@ -309,6 +333,7 @@ public class InventarioController {
             }
         });
     }
+
     private void mostrarDialogoAgregarStock(Alcancia alcancia) {
         Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Agregar Stock");
@@ -364,7 +389,7 @@ public class InventarioController {
         grid.setVgap(12);
         grid.setStyle("-fx-padding: 20;");
 
-        Spinner<Integer> cantidadSpinner = new Spinner<>(1, alcancia.getExistencia(), 1);
+        Spinner<Integer> cantidadSpinner = new Spinner<>(1, Math.max(1, alcancia.getExistencia()), 1);
         cantidadSpinner.setEditable(true);
         cantidadSpinner.setPrefWidth(120);
 
@@ -401,8 +426,7 @@ public class InventarioController {
 
                 if (alcanciaDAO.registrarMerma(alcancia.getId(), cantidad, tieneArreglo, motivo)) {
                     if (tieneArreglo) {
-                        showAlert("Exito", cantidad + " piezas movidas a merma con precio de $" +
-                                String.format("%.2f", alcancia.getPrecio() * 0.5));
+                        showAlert("Exito", cantidad + " piezas movidas a merma.");
                     } else {
                         showAlert("Exito", cantidad + " piezas registradas como perdida.");
                     }

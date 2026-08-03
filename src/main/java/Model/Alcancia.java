@@ -9,6 +9,10 @@ public class Alcancia {
     private double precio;
     private double precioMayoreo;
     private String estado;
+    private double costoProduccion;
+
+    public double getCostoProduccion() { return costoProduccion; }
+    public void setCostoProduccion(double costoProduccion) { this.costoProduccion = costoProduccion; }
 
     public Alcancia() {}
 

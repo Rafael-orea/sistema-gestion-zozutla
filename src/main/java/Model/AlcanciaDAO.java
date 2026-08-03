@@ -166,6 +166,71 @@ public class AlcanciaDAO {
         }
     }
 
+    public List<Alcancia> getAlcanciasFiltradas(String termino, String filtroEstado) {
+        List<Alcancia> lista = new ArrayList<>();
+
+        StringBuilder query = new StringBuilder("SELECT a.*, " +
+                "COALESCE((SELECT SUM(dai.cantidad * dai.costo_unitario) " +
+                "FROM detalle_alcancia_insumo dai WHERE dai.id_alcancia = a.id_alcancia), 0) as costo_produccion " +
+                "FROM alcancia a WHERE 1=1 ");
+
+        if (termino != null && !termino.isEmpty()) {
+            query.append("AND a.nombre LIKE ? ");
+        }
+
+        switch (filtroEstado) {
+            case "Disponible" -> query.append("AND a.estado = 'disponible' ");
+            case "Agotado" -> query.append("AND a.estado = 'agotado' ");
+            case "Stock Bajo" -> query.append("AND a.existencia > 0 AND a.existencia <= 8 ");
+        }
+
+        query.append("ORDER BY a.id_alcancia");
+
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query.toString())) {
+
+            int param = 1;
+            if (termino != null && !termino.isEmpty()) {
+                pstmt.setString(param++, "%" + termino + "%");
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Alcancia a = extraerAlcancia(rs);
+                    a.setCostoProduccion(rs.getDouble("costo_produccion"));
+                    lista.add(a);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getAlcanciasFiltradas: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public int countAgotadas() {
+        String query = "SELECT COUNT(*) FROM alcancia WHERE estado = 'agotado'";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("Error countAgotadas: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public int countStockBajo() {
+        String query = "SELECT COUNT(*) FROM alcancia WHERE existencia > 0 AND existencia <= 8";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("Error countStockBajo: " + e.getMessage());
+        }
+        return 0;
+    }
+
     public List<Molde> getMoldesDisponibles() {
         List<Molde> moldes = new ArrayList<>();
         Molde sinMolde = new Molde();
@@ -203,6 +268,8 @@ public class AlcanciaDAO {
         a.setPrecio(rs.getDouble("precio"));
         a.setPrecioMayoreo(rs.getDouble("precio_mayoreo"));
         a.setEstado(rs.getString("estado"));
+        // En extraerAlcancia agrega al final antes del return:
+        try { a.setCostoProduccion(rs.getDouble("costo_produccion")); } catch (Exception e) {}
         return a;
     }
 }
