@@ -128,7 +128,7 @@ public class EnvioDAO {
     public List<DetalleVenta> getProductosDeVenta(int idVenta) {
         List<DetalleVenta> lista = new ArrayList<>();
         String query =
-                "SELECT dv.cantidad, dv.precio_unitario, dv.subtotal, a.nombre " +
+                "SELECT dv.id_alcancia, dv.cantidad, dv.precio_unitario, dv.subtotal, a.nombre " +
                         "FROM detalle_venta dv " +
                         "JOIN alcancia a ON dv.id_alcancia = a.id_alcancia " +
                         "WHERE dv.id_venta = ?";
@@ -138,6 +138,7 @@ public class EnvioDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     DetalleVenta d = new DetalleVenta();
+                    d.setIdAlcancia(rs.getInt("id_alcancia"));
                     d.setNombreAlcancia(rs.getString("nombre"));
                     d.setCantidad(rs.getInt("cantidad"));
                     d.setPrecioUnitario(rs.getDouble("precio_unitario"));

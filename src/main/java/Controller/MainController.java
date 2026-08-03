@@ -68,9 +68,10 @@ public class MainController {
     private void handleEnvios() {
         loadView("/View/EnvioView.fxml");
     }
+
     @FXML
     private void handleReportes() {
-        showAlert("Info", "Modulo en construccion.");
+        loadView("/View/ReporteView.fxml");
     }
 
     @FXML
