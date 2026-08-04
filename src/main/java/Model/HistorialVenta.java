@@ -10,6 +10,10 @@ public class HistorialVenta {
     private int cantidad;
     private double total;
     private String folio;
+    private String estadoEnvio;
+
+    public String getEstadoEnvio() { return estadoEnvio; }
+    public void setEstadoEnvio(String estadoEnvio) { this.estadoEnvio = estadoEnvio; }
 
     public HistorialVenta() {}
 

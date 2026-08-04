@@ -75,7 +75,8 @@
                     </padding>
 
                     <Label text="Bienvenido"
-                           styleClass="title"/>
+                           styleClass="title"
+                           style="-fx-font-size:18"/>
 
                     <Label text="Inicia sesión para acceder al sistema"
                            styleClass="subtitle"/>

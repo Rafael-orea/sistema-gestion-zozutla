@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label; // Importante añadir esta importación
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -49,7 +50,7 @@ public class LoginController {
         String password = passwordField.getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showAlert("Error", "Por favor, complete todos los campos.");
+            showErrorAlert("Error", "Por favor, complete todos los campos.");
             return;
         }
 
@@ -72,19 +73,38 @@ public class LoginController {
                 stage.show();
 
             } catch (IOException e) {
-                showAlert("Error", "No se pudo cargar la ventana principal: " + e.getMessage());
+                showErrorAlert("Error", "No se pudo cargar la ventana principal: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            showAlert("Error", "Usuario o contraseña incorrectos.");
+            // AQUÍ LLAMAMOS A LA NUEVA ALERTA DE ERROR
+            showErrorAlert("Error", "Usuario o contraseña incorrectos.");
         }
     }
 
+    // Alerta original de información
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // NUEVO MÉTODO: Alerta de error con texto en rojo
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR); // Cambiado a ERROR para el icono
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+
+        // Crear un Label personalizado para poder cambiarle el color
+        Label label = new Label(message);
+        label.setStyle("-fx-text-fill: red; -fx-font-weight: bold;"); // Texto rojo y en negrita
+        label.setWrapText(true); // Por si el mensaje es muy largo
+
+        // Reemplazar el contenido estándar por nuestro Label rojo
+        alert.getDialogPane().setContent(label);
+
         alert.showAndWait();
     }
 }

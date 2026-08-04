@@ -105,14 +105,13 @@
 
 .title{
 
-    -fx-font-size:56px;
+    -fx-font-size:100px;
 
-    -fx-font-weight:900;
+    -fx-text-fill:red;
 
-    -fx-text-fill:#2B2118;
+    -fx-font-weight:bold;
 
 }
-
 .subtitle{
 
     -fx-font-size:20px;

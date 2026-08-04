@@ -7,17 +7,20 @@ import java.util.List;
 
 public class HistorialVentaDAO {
 
-    public List<HistorialVenta> getHistorial(LocalDate fecha, String idCliente, String idModelo) {
+    public List<HistorialVenta> getHistorial(LocalDate fecha, String idCliente,
+                                             String idModelo, String estadoEnvio) {
         List<HistorialVenta> lista = new ArrayList<>();
 
         StringBuilder query = new StringBuilder(
                 "SELECT v.id_venta, v.fecha, v.folio, v.total, " +
                         "a.nombre as modelo, SUM(dv.cantidad) as cantidad, " +
-                        "c.nombre as cliente " +
+                        "c.nombre as cliente, " +
+                        "COALESCE(e.estado, 'venta') as estado_envio " +
                         "FROM venta v " +
                         "JOIN detalle_venta dv ON v.id_venta = dv.id_venta " +
                         "JOIN alcancia a ON dv.id_alcancia = a.id_alcancia " +
                         "JOIN cliente c ON v.id_cliente = c.id_cliente " +
+                        "LEFT JOIN envio e ON v.id_venta = e.id_venta " +
                         "WHERE 1=1 "
         );
 
@@ -35,17 +38,23 @@ public class HistorialVentaDAO {
             query.append("AND a.id_alcancia = ? ");
             params.add(Integer.parseInt(idModelo));
         }
+        if (estadoEnvio != null && !estadoEnvio.isEmpty()) {
+            if (estadoEnvio.equals("venta")) {
+                query.append("AND e.id_envio IS NULL ");
+            } else {
+                query.append("AND e.estado = ? ");
+                params.add(estadoEnvio);
+            }
+        }
 
-        query.append("GROUP BY v.id_venta, v.fecha, v.folio, v.total, a.nombre, c.nombre ");
+        query.append("GROUP BY v.id_venta, v.fecha, v.folio, v.total, a.nombre, c.nombre, e.estado ");
         query.append("ORDER BY v.fecha DESC");
 
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query.toString())) {
-
             for (int i = 0; i < params.size(); i++) {
                 pstmt.setObject(i + 1, params.get(i));
             }
-
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     HistorialVenta h = new HistorialVenta();
@@ -57,6 +66,7 @@ public class HistorialVentaDAO {
                     h.setCantidad(rs.getInt("cantidad"));
                     h.setTotal(rs.getDouble("total"));
                     h.setCliente(rs.getString("cliente"));
+                    h.setEstadoEnvio(rs.getString("estado_envio"));
                     lista.add(h);
                 }
             }
@@ -67,7 +77,7 @@ public class HistorialVentaDAO {
     }
 
     public List<HistorialVenta> getTodo() {
-        return getHistorial(null, null, null);
+        return getHistorial(null, null, null, null);
     }
 
     public List<Alcancia> getAlcanciasCombo() {
