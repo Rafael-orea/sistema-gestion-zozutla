@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -18,15 +19,16 @@
     <Label text="GESTION DE MOLDES"
            style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
 
-    <!-- Barra superior: buscador + boton agregar -->
     <HBox spacing="10" alignment="CENTER_LEFT">
         <TextField fx:id="searchField"
                    promptText="Buscar molde..."
-                   prefWidth="300" prefHeight="36"
+                   prefWidth="250" prefHeight="36"
                    style="-fx-background-color: #EDE8DC;
                           -fx-border-color: #C0B090;
                           -fx-border-width: 1;
                           -fx-padding: 6;"/>
+        <ComboBox fx:id="filtroEstado"
+                  prefWidth="180" prefHeight="36"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="+ Agregar molde"
                 onAction="#handleAgregarMolde"
@@ -39,15 +41,14 @@
                        -fx-cursor: hand;"/>
     </HBox>
 
-    <!-- Tabla -->
     <TableView fx:id="moldeTable" VBox.vgrow="ALWAYS"
                style="-fx-background-color: #EDE8DC;
                       -fx-border-color: #C8BFA8;
                       -fx-border-width: 1;">
         <columns>
             <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="colNombre" text="NOMBRE" prefWidth="280"/>
-            <TableColumn fx:id="colEstado" text="ESTADO" prefWidth="120"/>
+            <TableColumn fx:id="colNombre" text="NOMBRE" prefWidth="300"/>
+            <TableColumn fx:id="colEstado" text="ESTADO" prefWidth="130"/>
             <TableColumn fx:id="colFecha" text="FECHA DE REGISTRO" prefWidth="160"/>
             <TableColumn fx:id="colAcciones" text="ACCIONES" prefWidth="160"/>
         </columns>
@@ -56,12 +57,31 @@
         </columnResizePolicy>
     </TableView>
 
-    <!-- Total -->
-    <HBox spacing="6">
-        <Label text="Total de moldes:"
-               style="-fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
-        <Label fx:id="totalLabel" text="0"
-               style="-fx-text-fill: #2B2118;"/>
+    <HBox spacing="20">
+        <HBox spacing="6">
+            <Label text="Total:"
+                   style="-fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
+            <Label fx:id="totalLabel" text="0"
+                   style="-fx-text-fill: #2B2118;"/>
+        </HBox>
+        <HBox spacing="6">
+            <Label text="Buenos:"
+                   style="-fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+            <Label fx:id="buenosLabel" text="0"
+                   style="-fx-text-fill: #27ae60;"/>
+        </HBox>
+        <HBox spacing="6">
+            <Label text="Dañados:"
+                   style="-fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+            <Label fx:id="danadosLabel" text="0"
+                   style="-fx-text-fill: #e74c3c;"/>
+        </HBox>
+        <HBox spacing="6">
+            <Label text="Fuera de uso:"
+                   style="-fx-font-weight: bold; -fx-text-fill: #e67e22;"/>
+            <Label fx:id="fueraUsoLabel" text="0"
+                   style="-fx-text-fill: #e67e22;"/>
+        </HBox>
     </HBox>
 
 </VBox>

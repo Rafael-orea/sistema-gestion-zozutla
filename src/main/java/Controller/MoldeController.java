@@ -7,6 +7,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import java.util.Optional;
 public class MoldeController {
 
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> filtroEstado;
     @FXML private TableView<Molde> moldeTable;
     @FXML private TableColumn<Molde, Integer> colId;
     @FXML private TableColumn<Molde, String> colNombre;
@@ -21,23 +24,46 @@ public class MoldeController {
     @FXML private TableColumn<Molde, LocalDate> colFecha;
     @FXML private TableColumn<Molde, Void> colAcciones;
     @FXML private Label totalLabel;
+    @FXML private Label buenosLabel;
+    @FXML private Label danadosLabel;
+    @FXML private Label fueraUsoLabel;
 
     private MoldeDAO moldeDAO = new MoldeDAO();
     private ObservableList<Molde> moldeList = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
+        filtroEstado.setItems(FXCollections.observableArrayList(
+                "Todos", "Bueno", "Dañado", "Fuera de uso"
+        ));
+        filtroEstado.setValue("Todos");
+
         setupColumnas();
         cargarMoldes();
-        setupBuscador();
+        setupFiltros();
+    }
+
+    private void setupFiltros() {
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
+        filtroEstado.valueProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
+    }
+
+    private void aplicarFiltros() {
+        String termino = searchField.getText().trim();
+        String estado = filtroEstado.getValue();
+        if (estado == null || estado.equals("Todos")) estado = "";
+
+        moldeList.clear();
+        moldeList.addAll(moldeDAO.getMoldesFiltrados(termino, estado));
+        actualizarContadores();
     }
 
     private void setupColumnas() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fechaRegistro"));
 
+        colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
         colEstado.setCellFactory(col -> new TableCell<Molde, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -46,12 +72,23 @@ public class MoldeController {
                     setText(null);
                     setStyle("");
                 } else {
-                    setText(item.toUpperCase());
                     switch (item) {
-                        case "bueno" -> setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
-                        case "dañado" -> setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                        case "fuera_de_uso" -> setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
-                        default -> setStyle("");
+                        case "bueno" -> {
+                            setText("BUENO");
+                            setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+                        }
+                        case "dañado" -> {
+                            setText("DAÑADO");
+                            setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                        }
+                        case "fuera_de_uso" -> {
+                            setText("FUERA DE USO");
+                            setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
+                        }
+                        default -> {
+                            setText(item);
+                            setStyle("");
+                        }
                     }
                 }
             }
@@ -69,7 +106,6 @@ public class MoldeController {
                     Molde molde = getTableView().getItems().get(getIndex());
                     mostrarDialogo(molde);
                 });
-
                 btnEliminar.setOnAction(e -> {
                     Molde molde = getTableView().getItems().get(getIndex());
                     eliminarMolde(molde);
@@ -82,37 +118,27 @@ public class MoldeController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    javafx.scene.layout.HBox box = new javafx.scene.layout.HBox(6, btnEditar, btnEliminar);
-                    box.setAlignment(javafx.geometry.Pos.CENTER);
+                    HBox box = new HBox(6, btnEditar, btnEliminar);
+                    box.setAlignment(Pos.CENTER);
                     setGraphic(box);
                 }
             }
         });
+
+        moldeTable.setItems(moldeList);
     }
 
     private void cargarMoldes() {
         moldeList.clear();
         moldeList.addAll(moldeDAO.getAllMoldes());
-        moldeTable.setItems(moldeList);
-        actualizarTotal();
+        actualizarContadores();
     }
 
-    private void setupBuscador() {
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null || newVal.isEmpty()) {
-                cargarMoldes();
-            } else {
-                moldeList.clear();
-                moldeList.addAll(moldeDAO.searchMoldes(newVal));
-                moldeTable.setItems(moldeList);
-                actualizarTotal();
-            }
-        });
-    }
-
-    private void actualizarTotal() {
-        if (totalLabel != null)
-            totalLabel.setText(String.valueOf(moldeList.size()));
+    private void actualizarContadores() {
+        totalLabel.setText(String.valueOf(moldeList.size()));
+        buenosLabel.setText(String.valueOf(moldeDAO.countPorEstado("bueno")));
+        danadosLabel.setText(String.valueOf(moldeDAO.countPorEstado("dañado")));
+        fueraUsoLabel.setText(String.valueOf(moldeDAO.countPorEstado("fuera_de_uso")));
     }
 
     @FXML
@@ -143,7 +169,8 @@ public class MoldeController {
         cantidadField.setPromptText("Cantidad");
 
         ComboBox<String> estadoCombo = new ComboBox<>();
-        estadoCombo.setItems(FXCollections.observableArrayList("bueno", "dañado", "fuera_de_uso"));
+        estadoCombo.setItems(FXCollections.observableArrayList(
+                "bueno", "dañado", "fuera_de_uso"));
         estadoCombo.setValue("bueno");
         estadoCombo.setPrefWidth(280);
 

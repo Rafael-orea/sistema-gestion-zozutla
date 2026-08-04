@@ -7,36 +7,59 @@ import java.util.List;
 
 public class MoldeDAO {
 
-    public List<Molde> getAllMoldes() {
+    public List<Molde> getMoldesFiltrados(String termino, String estado) {
         List<Molde> moldes = new ArrayList<>();
-        String query = "SELECT * FROM molde ORDER BY id_molde";
-        try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
-            while (rs.next()) {
-                moldes.add(extraerMolde(rs));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getAllMoldes: " + e.getMessage());
-        }
-        return moldes;
-    }
+        StringBuilder query = new StringBuilder(
+                "SELECT * FROM molde WHERE 1=1 ");
 
-    public List<Molde> searchMoldes(String termino) {
-        List<Molde> moldes = new ArrayList<>();
-        String query = "SELECT * FROM molde WHERE nombre LIKE ? ORDER BY id_molde";
+        if (termino != null && !termino.isEmpty()) {
+            query.append("AND nombre LIKE ? ");
+        }
+        switch (estado) {
+            case "Bueno" -> query.append("AND estado = 'bueno' ");
+            case "Dañado" -> query.append("AND estado = 'dañado' ");
+            case "Fuera de uso" -> query.append("AND estado = 'fuera_de_uso' ");
+        }
+        query.append("ORDER BY id_molde");
+
         try (Connection conn = ConexionBD.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setString(1, "%" + termino + "%");
+             PreparedStatement pstmt = conn.prepareStatement(query.toString())) {
+
+            if (termino != null && !termino.isEmpty()) {
+                pstmt.setString(1, "%" + termino + "%");
+            }
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     moldes.add(extraerMolde(rs));
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error searchMoldes: " + e.getMessage());
+            System.err.println("Error getMoldesFiltrados: " + e.getMessage());
         }
         return moldes;
+    }
+
+    public List<Molde> getAllMoldes() {
+        return getMoldesFiltrados("", "");
+    }
+
+    public List<Molde> searchMoldes(String termino) {
+        return getMoldesFiltrados(termino, "");
+    }
+
+    public int countPorEstado(String estado) {
+        String query = "SELECT COUNT(*) FROM molde WHERE estado = ?";
+        try (Connection conn = ConexionBD.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, estado);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error countPorEstado: " + e.getMessage());
+        }
+        return 0;
     }
 
     public boolean createMolde(Molde molde) {
@@ -61,7 +84,7 @@ public class MoldeDAO {
     }
 
     public boolean updateMolde(Molde molde) {
-        String query = "UPDATE molde SET nombre = ?, cantidad = ?, estado = ?, fecha_registro = ? WHERE id_molde = ?";
+        String query = "UPDATE molde SET nombre=?, cantidad=?, estado=?, fecha_registro=? WHERE id_molde=?";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, molde.getNombre());
@@ -77,7 +100,7 @@ public class MoldeDAO {
     }
 
     public boolean deleteMolde(int id) {
-        String query = "DELETE FROM molde WHERE id_molde = ?";
+        String query = "DELETE FROM molde WHERE id_molde=?";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, id);

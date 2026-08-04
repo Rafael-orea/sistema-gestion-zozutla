@@ -1,0 +1,429 @@
+/*==================================================
+                PALETA
+==================================================*/
+
+.root{
+    -fx-font-family: "Segoe UI";
+}
+
+/*==================================================
+                FONDO GENERAL
+==================================================*/
+
+.background{
+
+    -fx-background-color: linear-gradient(
+            to bottom right,
+            #F5F0E8 0%,
+            #EFE6D8 100%
+    );
+
+}
+
+/*==================================================
+                PANEL IZQUIERDO
+==================================================*/
+
+.left-panel{
+
+    -fx-background-color: transparent;
+
+    -fx-padding: 40;
+
+}
+
+/*==================================================
+                PANEL DERECHO
+==================================================*/
+
+.right-panel{
+
+    -fx-padding: 40;
+
+    -fx-alignment: center;
+
+}
+
+/*==================================================
+                TARJETA LOGIN
+==================================================*/
+
+.login-card{
+
+    -fx-background-color:#FCFBF8;
+
+    -fx-background-radius:30;
+
+    -fx-border-radius:30;
+
+    -fx-border-color:#D8CCB7;
+
+    -fx-border-width:1.5;
+
+    -fx-effect:dropshadow(
+            gaussian,
+            rgba(0,0,0,.18),
+            35,
+            .25,
+            0,
+            10
+    );
+
+}
+
+/*==================================================
+                    LOGO
+==================================================*/
+
+.logo-title{
+
+    -fx-font-size:42px;
+
+    -fx-font-weight:900;
+
+    -fx-text-fill:#2B2118;
+
+}
+
+.logo-description{
+
+    -fx-font-size:20px;
+
+    -fx-text-fill:#6B5A45;
+
+    -fx-text-alignment:center;
+
+    -fx-line-spacing:5;
+
+    -fx-alignment:center;
+
+}
+
+/*==================================================
+                    TITULOS
+==================================================*/
+
+.title{
+
+    -fx-font-size:56px;
+
+    -fx-font-weight:900;
+
+    -fx-text-fill:#2B2118;
+
+}
+
+.subtitle{
+
+    -fx-font-size:20px;
+
+    -fx-text-fill:#6B5A45;
+
+}
+
+/*==================================================
+                    LABELS
+==================================================*/
+
+.label{
+
+    -fx-font-size:17px;
+
+    -fx-font-weight:bold;
+
+    -fx-text-fill:#2B2118;
+
+}
+
+/*==================================================
+                TEXTFIELD
+==================================================*/
+
+.input{
+
+    -fx-background-color:white;
+
+    -fx-background-radius:14;
+
+    -fx-border-radius:14;
+
+    -fx-border-color:#C0B090;
+
+    -fx-border-width:1.5;
+
+    -fx-font-size:17px;
+
+    -fx-text-fill:#2B2118;
+
+    -fx-prompt-text-fill:#A79682;
+
+    -fx-padding:16 18;
+
+}
+
+.input:hover{
+
+    -fx-border-color:#8E7B63;
+
+}
+
+.input:focused{
+
+    -fx-border-color:#2B2118;
+
+    -fx-border-width:2;
+
+    -fx-background-color:white;
+
+}
+
+/*==================================================
+                BOTON LOGIN
+==================================================*/
+
+.primary-button{
+
+    -fx-background-color:#2B2118;
+
+    -fx-text-fill:white;
+
+    -fx-font-size:19px;
+
+    -fx-font-weight:bold;
+
+    -fx-background-radius:14;
+
+    -fx-cursor:hand;
+
+    -fx-padding:16;
+
+}
+
+.primary-button:hover{
+
+    -fx-background-color:#433226;
+
+}
+
+.primary-button:pressed{
+
+    -fx-background-color:#1A130F;
+
+}
+
+/*==================================================
+                SEPARADOR
+==================================================*/
+
+.separator .line{
+
+    -fx-border-color:#C0B090;
+
+    -fx-border-width:1;
+
+}
+
+/*==================================================
+                TABLAS
+==================================================*/
+
+.table-view{
+
+    -fx-background-color:#FCFBF8;
+
+    -fx-background-radius:14;
+
+    -fx-border-radius:14;
+
+    -fx-border-color:#C0B090;
+
+}
+
+.table-view .column-header{
+
+    -fx-background-color:#2B2118;
+
+}
+
+.table-view .column-header .label{
+
+    -fx-text-fill:white;
+
+    -fx-font-size:14px;
+
+    -fx-font-weight:bold;
+
+}
+
+.table-row-cell{
+
+    -fx-cell-size:40px;
+
+}
+
+.table-row-cell:odd{
+
+    -fx-background-color:#FCFBF8;
+
+}
+
+.table-row-cell:even{
+
+    -fx-background-color:#F3EEE4;
+
+}
+
+.table-row-cell:hover{
+
+    -fx-background-color:#E7DDCD;
+
+}
+
+.table-row-cell:selected{
+
+    -fx-background-color:#D8C3A4;
+
+}
+
+/*==================================================
+                BOTONES
+==================================================*/
+
+.success-button{
+
+    -fx-background-color:#27AE60;
+
+    -fx-text-fill:white;
+
+    -fx-background-radius:12;
+
+}
+
+.success-button:hover{
+
+    -fx-background-color:#239954;
+
+}
+
+.warning-button{
+
+    -fx-background-color:#E67E22;
+
+    -fx-text-fill:white;
+
+    -fx-background-radius:12;
+
+}
+
+.warning-button:hover{
+
+    -fx-background-color:#CF6E1C;
+
+}
+
+.danger-button{
+
+    -fx-background-color:#E74C3C;
+
+    -fx-text-fill:white;
+
+    -fx-background-radius:12;
+
+}
+
+.danger-button:hover{
+
+    -fx-background-color:#D53F31;
+
+}
+
+/*==================================================
+                COMBOBOX
+==================================================*/
+
+.combo-box{
+
+    -fx-background-color:white;
+
+    -fx-background-radius:12;
+
+    -fx-border-radius:12;
+
+    -fx-border-color:#C0B090;
+
+}
+
+/*==================================================
+                DATEPICKER
+==================================================*/
+
+.date-picker{
+
+    -fx-background-color:white;
+
+    -fx-background-radius:12;
+
+    -fx-border-radius:12;
+
+    -fx-border-color:#C0B090;
+
+}
+
+/*==================================================
+                SCROLLBAR
+==================================================*/
+
+.scroll-bar{
+
+    -fx-background-color:transparent;
+
+}
+
+.scroll-bar .thumb{
+
+    -fx-background-color:#C0B090;
+
+    -fx-background-radius:20;
+
+}
+
+/*==================================================
+                TARJETAS
+==================================================*/
+
+.card{
+
+    -fx-background-color:#FCFBF8;
+
+    -fx-background-radius:18;
+
+    -fx-border-radius:18;
+
+    -fx-border-color:#DDD2BE;
+
+    -fx-padding:20;
+
+    -fx-effect:dropshadow(
+            gaussian,
+            rgba(0,0,0,.15),
+            18,
+            .20,
+            0,
+            5
+    );
+
+}
+
+/*==================================================
+                TOOLTIP
+==================================================*/
+
+.tooltip{
+
+    -fx-background-color:#2B2118;
+
+    -fx-text-fill:white;
+
+    -fx-background-radius:8;
+
+}

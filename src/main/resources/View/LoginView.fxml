@@ -1,58 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.image.*?>
 
-<HBox xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="Controller.LoginController"
-      alignment="CENTER"
-      spacing="60"
-      prefWidth="700" prefHeight="500"
-      style="-fx-background-color: #F5F0E8; -fx-padding: 40;">
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controller.LoginController"
+            stylesheets="@/styles.css"
+            styleClass="background">
 
-    <children>
-        <ImageView fx:id="logoImage"
-                   fitWidth="200" fitHeight="200"
-                   preserveRatio="true"/>
+    <!-- =======================
+            LADO IZQUIERDO
+    ======================== -->
 
-        <VBox spacing="20" alignment="CENTER">
-            <Label text="INICIO DE SESIÓN"
-                   style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #3B2A1A;"/>
+    <left>
 
-            <VBox spacing="6">
-                <Label text="USUARIO"
-                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3B2A1A;"/>
-                <TextField fx:id="usernameField"
-                           prefWidth="260" prefHeight="36"
-                           style="-fx-background-color: #EDE8DC;
-                                  -fx-border-color: #C0B090;
-                                  -fx-border-width: 1;
-                                  -fx-padding: 6;"/>
-            </VBox>
+        <StackPane BorderPane.alignment="CENTER"
+                   prefWidth="650"
+                   styleClass="left-panel">
 
-            <VBox spacing="6">
-                <Label text="CONTRASEÑA"
-                       style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3B2A1A;"/>
-                <PasswordField fx:id="passwordField"
-                               prefWidth="260" prefHeight="36"
-                               style="-fx-background-color: #EDE8DC;
-                                      -fx-border-color: #C0B090;
-                                      -fx-border-width: 1;
-                                      -fx-padding: 6;"/>
-            </VBox>
+            <children>
 
-            <Button text="ENTRAR"
-                    onAction="#handleLogin"
-                    prefWidth="160" prefHeight="40"
-                    style="-fx-background-color: #E8E0D0;
-                           -fx-border-color: #3B2A1A;
-                           -fx-border-width: 1;
-                           -fx-font-size: 14px;
-                           -fx-font-weight: bold;
-                           -fx-text-fill: #3B2A1A;
-                           -fx-cursor: hand;"/>
-        </VBox>
-    </children>
-</HBox>
+                <VBox alignment="CENTER"
+                      spacing="20"
+                      maxWidth="500">
+
+                    <ImageView fx:id="logoImage"
+                               fitWidth="430"
+                               fitHeight="430"
+                               preserveRatio="true"/>
+
+                    <Label text="Artesanías Zozutla"
+                           styleClass="logo-title"/>
+
+                    <Separator prefWidth="260"/>
+
+                    <Label text="Tradición que se hereda,&#10;calidad que perdura."
+                           wrapText="true"
+                           styleClass="logo-description"/>
+
+                </VBox>
+
+            </children>
+
+        </StackPane>
+
+    </left>
+
+    <!-- =======================
+            LADO DERECHO
+    ======================== -->
+
+    <center>
+
+        <StackPane alignment="CENTER"
+                   styleClass="right-panel">
+
+            <children>
+
+                <VBox alignment="CENTER_LEFT"
+                      spacing="22"
+                      maxWidth="600"
+                      prefWidth="600"
+                      styleClass="login-card">
+
+                    <padding>
+                        <Insets top="55"
+                                right="55"
+                                bottom="55"
+                                left="55"/>
+                    </padding>
+
+                    <Label text="Bienvenido"
+                           styleClass="title"/>
+
+                    <Label text="Inicia sesión para acceder al sistema"
+                           styleClass="subtitle"/>
+
+                    <VBox spacing="8">
+
+                        <Label text="Usuario"
+                               styleClass="label"/>
+
+                        <TextField fx:id="usernameField"
+                                   promptText="Ingresa tu usuario"
+                                   prefHeight="58"
+                                   styleClass="input"/>
+
+                    </VBox>
+
+                    <VBox spacing="8">
+
+                        <Label text="Contraseña"
+                               styleClass="label"/>
+
+                        <PasswordField fx:id="passwordField"
+                                       promptText="Ingresa tu contraseña"
+                                       prefHeight="58"
+                                       styleClass="input"/>
+
+                    </VBox>
+
+                    <Button text="Iniciar sesión"
+                            prefHeight="58"
+                            maxWidth="Infinity"
+                            onAction="#handleLogin"
+                            styleClass="primary-button"/>
+
+                </VBox>
+
+            </children>
+
+        </StackPane>
+
+    </center>
+
+</BorderPane>
