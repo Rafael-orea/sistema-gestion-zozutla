@@ -28,10 +28,10 @@ public class EnvioDAO {
         return lista;
     }
 
-    public List<Envio> searchEnvios(LocalDate fecha, String idCliente) {
+    public List<Envio> searchEnvios(LocalDate fecha, String idCliente, String estado) {
         List<Envio> lista = new ArrayList<>();
         StringBuilder query = new StringBuilder(
-                "SELECT e.id_envio, e.destino, e.fecha, e.estado, e.flete, " +
+                "SELECT e.id_envio, e.id_venta, e.destino, e.fecha, e.estado, e.flete, " +
                         "v.folio, c.nombre as cliente " +
                         "FROM envio e " +
                         "JOIN venta v ON e.id_venta = v.id_venta " +
@@ -40,6 +40,7 @@ public class EnvioDAO {
         );
 
         List<Object> params = new ArrayList<>();
+
         if (fecha != null) {
             query.append("AND DATE(e.fecha) = ? ");
             params.add(Date.valueOf(fecha));
@@ -48,6 +49,11 @@ public class EnvioDAO {
             query.append("AND v.id_cliente = ? ");
             params.add(Integer.parseInt(idCliente));
         }
+        if (estado != null && !estado.isEmpty()) {
+            query.append("AND e.estado = ? ");
+            params.add(estado);
+        }
+
         query.append("ORDER BY e.fecha DESC");
 
         try (Connection conn = ConexionBD.conectar();

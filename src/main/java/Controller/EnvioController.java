@@ -22,24 +22,94 @@ import java.util.Optional;
 public class EnvioController {
 
     @FXML private DatePicker fechaPicker;
-    @FXML private ComboBox<Cliente> clienteCombo;
+    @FXML private TextField clienteSearchField;
+    @FXML private ListView<Cliente> clienteListView;
+    @FXML private ComboBox<String> filtroEstado;
     @FXML private TableView<Envio> envioTable;
     @FXML private TableColumn<Envio, String> colId;
     @FXML private TableColumn<Envio, String> colFolio;
     @FXML private TableColumn<Envio, String> colCliente;
     @FXML private TableColumn<Envio, String> colDestino;
+    @FXML private TableColumn<Envio, String> colFlete;
     @FXML private TableColumn<Envio, String> colEstado;
     @FXML private TableColumn<Envio, Void> colAcciones;
     @FXML private Label totalLabel;
 
     private EnvioDAO envioDAO = new EnvioDAO();
     private ObservableList<Envio> envioList = FXCollections.observableArrayList();
+    private List<Cliente> todosClientes;
+    private Cliente clienteSeleccionado;
+    private boolean seleccionandoCliente = false;
 
     @FXML
     public void initialize() {
+        filtroEstado.setItems(FXCollections.observableArrayList(
+                "Todos", "En proceso", "Entregado", "Con incidencia"
+        ));
+        filtroEstado.setValue("Todos");
+
         setupColumnas();
         cargarClientes();
         cargarEnvios();
+    }
+
+    private void cargarClientes() {
+        todosClientes = envioDAO.getClientesDisponibles();
+        ObservableList<Cliente> clientesObs = FXCollections.observableArrayList(todosClientes);
+
+        clienteListView.setItems(clientesObs);
+        clienteListView.setCellFactory(lv -> new ListCell<Cliente>() {
+            @Override protected void updateItem(Cliente c, boolean empty) {
+                super.updateItem(c, empty);
+                setText(empty || c == null ? null : c.getNombre());
+            }
+        });
+
+        clienteSearchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (seleccionandoCliente) return;
+            ObservableList<Cliente> filtrados = FXCollections.observableArrayList();
+            for (Cliente c : todosClientes) {
+                if (newVal == null || newVal.isEmpty() ||
+                        c.getNombre().toLowerCase().contains(newVal.toLowerCase())) {
+                    filtrados.add(c);
+                }
+            }
+            clienteListView.setItems(filtrados);
+            clienteListView.setVisible(true);
+            clienteListView.setManaged(true);
+            clienteSeleccionado = null;
+        });
+
+        clienteListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, sel) -> {
+            if (sel != null) {
+                seleccionandoCliente = true;
+                clienteSeleccionado = sel;
+                clienteSearchField.setText(sel.getNombre());
+                clienteListView.setVisible(false);
+                clienteListView.setManaged(false);
+                javafx.application.Platform.runLater(() -> seleccionandoCliente = false);
+            }
+        });
+
+        clienteSearchField.setOnMouseClicked(e -> {
+            seleccionandoCliente = false;
+            clienteListView.setItems(clientesObs);
+            clienteListView.setVisible(true);
+            clienteListView.setManaged(true);
+            javafx.application.Platform.runLater(() -> clienteSearchField.selectAll());
+        });
+
+        clienteSearchField.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.BACK_SPACE ||
+                    e.getCode() == javafx.scene.input.KeyCode.DELETE) {
+                seleccionandoCliente = false;
+                clienteListView.setVisible(true);
+                clienteListView.setManaged(true);
+            }
+        });
+
+        clienteListView.setVisible(false);
+        clienteListView.setManaged(false);
     }
 
     private void setupColumnas() {
@@ -52,16 +122,35 @@ public class EnvioController {
         colDestino.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getDestino()));
 
+        colFlete.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getFlete()));
+        colFlete.setCellFactory(col -> new TableCell<Envio, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); }
+                else {
+                    switch (item) {
+                        case "zozutla" -> {
+                            setText("Zozutla lo lleva");
+                            setStyle("-fx-text-fill: #2980b9; -fx-font-weight: bold;");
+                        }
+                        case "cliente" -> {
+                            setText("Cliente recoge");
+                            setStyle("-fx-text-fill: #6B5A45;");
+                        }
+                        default -> { setText(item); setStyle(""); }
+                    }
+                }
+            }
+        });
+
         colEstado.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getEstado()));
         colEstado.setCellFactory(col -> new TableCell<Envio, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
+            @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
+                if (empty || item == null) { setText(null); setStyle(""); }
+                else {
                     switch (item) {
                         case "en_proceso" -> {
                             setText("En proceso");
@@ -75,7 +164,7 @@ public class EnvioController {
                             setText("Con incidencia");
                             setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
                         }
-                        default -> setText(item);
+                        default -> { setText(item); setStyle(""); }
                     }
                 }
             }
@@ -95,12 +184,10 @@ public class EnvioController {
                     Envio envio = getTableView().getItems().get(getIndex());
                     marcarEntregado(envio);
                 });
-
                 btnIncidencia.setOnAction(e -> {
                     Envio envio = getTableView().getItems().get(getIndex());
                     abrirIncidencia(envio);
                 });
-
                 btnVerIncidencia.setOnAction(e -> {
                     Envio envio = getTableView().getItems().get(getIndex());
                     verIncidencias(envio);
@@ -123,23 +210,6 @@ public class EnvioController {
         envioTable.setItems(envioList);
     }
 
-    private void cargarClientes() {
-        List<Cliente> clientes = envioDAO.getClientesDisponibles();
-        Cliente todos = new Cliente();
-        todos.setId(0);
-        todos.setNombre("Todos");
-        clientes.add(0, todos);
-
-        clienteCombo.setItems(FXCollections.observableArrayList(clientes));
-        clienteCombo.setValue(todos);
-        clienteCombo.setConverter(new javafx.util.StringConverter<Cliente>() {
-            @Override
-            public String toString(Cliente c) { return c == null ? "" : c.getNombre(); }
-            @Override
-            public Cliente fromString(String s) { return null; }
-        });
-    }
-
     private void cargarEnvios() {
         envioList.clear();
         envioList.addAll(envioDAO.getAllEnvios());
@@ -149,13 +219,33 @@ public class EnvioController {
     @FXML
     private void handleBuscar() {
         LocalDate fecha = fechaPicker.getValue();
-        Cliente clienteSeleccionado = clienteCombo.getValue();
-        String idCliente = (clienteSeleccionado == null || clienteSeleccionado.getId() == 0)
-                ? null : String.valueOf(clienteSeleccionado.getId());
+        String idCliente = clienteSeleccionado != null ?
+                String.valueOf(clienteSeleccionado.getId()) : null;
+
+        String estadoSeleccionado = filtroEstado.getValue();
+        String estadoQuery = null;
+        if (estadoSeleccionado != null && !estadoSeleccionado.equals("Todos")) {
+            switch (estadoSeleccionado) {
+                case "En proceso" -> estadoQuery = "en_proceso";
+                case "Entregado" -> estadoQuery = "entregado";
+                case "Con incidencia" -> estadoQuery = "con_incidencia";
+            }
+        }
 
         envioList.clear();
-        envioList.addAll(envioDAO.searchEnvios(fecha, idCliente));
+        envioList.addAll(envioDAO.searchEnvios(fecha, idCliente, estadoQuery));
         actualizarTotal();
+    }
+
+    @FXML
+    private void handleLimpiar() {
+        fechaPicker.setValue(null);
+        clienteSearchField.clear();
+        clienteSeleccionado = null;
+        filtroEstado.setValue("Todos");
+        clienteListView.setVisible(false);
+        clienteListView.setManaged(false);
+        cargarEnvios();
     }
 
     @FXML
@@ -163,7 +253,6 @@ public class EnvioController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/ReportarEnvioView.fxml"));
             Parent root = loader.load();
-            // Buscar el contentArea del MainController
             javafx.scene.layout.StackPane contentArea =
                     (javafx.scene.layout.StackPane) envioTable.getScene().lookup("#contentArea");
             contentArea.getChildren().clear();
@@ -192,12 +281,10 @@ public class EnvioController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/IncidenciaEnvioView.fxml"));
             Parent root = loader.load();
-
             IncidenciaEnvioController controller = loader.getController();
             controller.setEnvio(envio);
-
             Stage stage = new Stage();
-            stage.setTitle("Incidencia de Envio");
+            stage.setTitle("Incidencia - " + envio.getFolio());
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -211,10 +298,8 @@ public class EnvioController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/VerIncidenciaView.fxml"));
             Parent root = loader.load();
-
             VerIncidenciaController controller = loader.getController();
             controller.setEnvio(envio);
-
             Stage stage = new Stage();
             stage.setTitle("Incidencias - " + envio.getFolio());
             stage.setScene(new Scene(root));

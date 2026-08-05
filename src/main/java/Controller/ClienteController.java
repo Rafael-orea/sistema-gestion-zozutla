@@ -19,6 +19,7 @@ public class ClienteController {
     @FXML private TableColumn<Cliente, Integer> colId;
     @FXML private TableColumn<Cliente, String> colNombre;
     @FXML private TableColumn<Cliente, String> colTelefono;
+    @FXML private TableColumn<Cliente, String> colCiudad;
     @FXML private TableColumn<Cliente, String> colPais;
     @FXML private TableColumn<Cliente, String> colTipo;
     @FXML private TableColumn<Cliente, Void> colAcciones;
@@ -38,6 +39,7 @@ public class ClienteController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colTelefono.setCellValueFactory(new PropertyValueFactory<>("telefono"));
+        colCiudad.setCellValueFactory(new PropertyValueFactory<>("ciudad"));
         colPais.setCellValueFactory(new PropertyValueFactory<>("pais"));
 
         colTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
@@ -79,7 +81,6 @@ public class ClienteController {
                     Cliente c = getTableView().getItems().get(getIndex());
                     mostrarDialogo(c);
                 });
-
                 btnEliminar.setOnAction(e -> {
                     Cliente c = getTableView().getItems().get(getIndex());
                     eliminarCliente(c);
@@ -150,8 +151,42 @@ public class ClienteController {
         nombreField.setPrefWidth(280);
 
         TextField telefonoField = new TextField();
-        telefonoField.setPromptText("Telefono");
+        telefonoField.setPromptText("10 digitos");
         telefonoField.setPrefWidth(280);
+// Solo permite 10 digitos numericos
+        telefonoField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.matches("\\d*")) {
+                telefonoField.setText(newVal.replaceAll("[^\\d]", ""));
+            }
+            if (telefonoField.getText().length() > 10) {
+                telefonoField.setText(telefonoField.getText().substring(0, 10));
+            }
+        });
+
+        TextField calleField = new TextField();
+        calleField.setPromptText("Calle y numero");
+        calleField.setPrefWidth(280);
+
+        TextField ciudadField = new TextField();
+        ciudadField.setPromptText("Ciudad");
+        ciudadField.setPrefWidth(280);
+
+        TextField estadoField = new TextField();
+        estadoField.setPromptText("Estado o Provincia");
+        estadoField.setPrefWidth(280);
+
+        TextField cpField = new TextField();
+        cpField.setPromptText("5 digitos");
+        cpField.setPrefWidth(280);
+// Solo permite 5 digitos numericos
+        cpField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.matches("\\d*")) {
+                cpField.setText(newVal.replaceAll("[^\\d]", ""));
+            }
+            if (cpField.getText().length() > 5) {
+                cpField.setText(cpField.getText().substring(0, 5));
+            }
+        });
 
         TextField paisField = new TextField();
         paisField.setPromptText("Pais");
@@ -164,8 +199,12 @@ public class ClienteController {
 
         if (esEdicion) {
             nombreField.setText(cliente.getNombre());
-            telefonoField.setText(cliente.getTelefono());
-            paisField.setText(cliente.getPais());
+            telefonoField.setText(cliente.getTelefono() != null ? cliente.getTelefono() : "");
+            calleField.setText(cliente.getCalle() != null ? cliente.getCalle() : "");
+            ciudadField.setText(cliente.getCiudad() != null ? cliente.getCiudad() : "");
+            estadoField.setText(cliente.getEstadoRegion() != null ? cliente.getEstadoRegion() : "");
+            cpField.setText(cliente.getCodigoPostal() != null ? cliente.getCodigoPostal() : "");
+            paisField.setText(cliente.getPais() != null ? cliente.getPais() : "");
             tipoCombo.setValue(cliente.getTipo());
         }
 
@@ -173,10 +212,18 @@ public class ClienteController {
         grid.add(nombreField, 1, 0);
         grid.add(new Label("Telefono:"), 0, 1);
         grid.add(telefonoField, 1, 1);
-        grid.add(new Label("Pais:"), 0, 2);
-        grid.add(paisField, 1, 2);
-        grid.add(new Label("Tipo:"), 0, 3);
-        grid.add(tipoCombo, 1, 3);
+        grid.add(new Label("Calle y numero:"), 0, 2);
+        grid.add(calleField, 1, 2);
+        grid.add(new Label("Ciudad:"), 0, 3);
+        grid.add(ciudadField, 1, 3);
+        grid.add(new Label("Estado/Provincia:"), 0, 4);
+        grid.add(estadoField, 1, 4);
+        grid.add(new Label("Codigo postal:"), 0, 5);
+        grid.add(cpField, 1, 5);
+        grid.add(new Label("Pais:"), 0, 6);
+        grid.add(paisField, 1, 6);
+        grid.add(new Label("Tipo:"), 0, 7);
+        grid.add(tipoCombo, 1, 7);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -190,6 +237,10 @@ public class ClienteController {
                 if (esEdicion) c.setId(cliente.getId());
                 c.setNombre(nombreField.getText().trim());
                 c.setTelefono(telefonoField.getText().trim());
+                c.setCalle(calleField.getText().trim());
+                c.setCiudad(ciudadField.getText().trim());
+                c.setEstadoRegion(estadoField.getText().trim());
+                c.setCodigoPostal(cpField.getText().trim());
                 c.setPais(paisField.getText().trim());
                 c.setTipo(tipoCombo.getValue());
                 return c;

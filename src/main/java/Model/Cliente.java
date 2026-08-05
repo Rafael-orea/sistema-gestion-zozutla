@@ -6,6 +6,22 @@ public class Cliente {
     private String telefono;
     private String pais;
     private String tipo;
+    private String calle;
+    private String ciudad;
+    private String estadoRegion;
+    private String codigoPostal;
+
+    public String getCalle() { return calle; }
+    public void setCalle(String calle) { this.calle = calle; }
+
+    public String getCiudad() { return ciudad; }
+    public void setCiudad(String ciudad) { this.ciudad = ciudad; }
+
+    public String getEstadoRegion() { return estadoRegion; }
+    public void setEstadoRegion(String estadoRegion) { this.estadoRegion = estadoRegion; }
+
+    public String getCodigoPostal() { return codigoPostal; }
+    public void setCodigoPostal(String codigoPostal) { this.codigoPostal = codigoPostal; }
 
     public Cliente() {}
 

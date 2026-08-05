@@ -39,13 +39,17 @@ public class ClienteDAO {
     }
 
     public boolean createCliente(Cliente c) {
-        String query = "INSERT INTO cliente (nombre, telefono, pais, tipo) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO cliente (nombre, telefono, pais, tipo, calle, ciudad, estado_region, codigo_postal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, c.getNombre());
             pstmt.setString(2, c.getTelefono());
             pstmt.setString(3, c.getPais());
             pstmt.setString(4, c.getTipo());
+            pstmt.setString(5, c.getCalle());
+            pstmt.setString(6, c.getCiudad());
+            pstmt.setString(7, c.getEstadoRegion());
+            pstmt.setString(8, c.getCodigoPostal());
             int rows = pstmt.executeUpdate();
             if (rows > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -60,19 +64,37 @@ public class ClienteDAO {
     }
 
     public boolean updateCliente(Cliente c) {
-        String query = "UPDATE cliente SET nombre=?, telefono=?, pais=?, tipo=? WHERE id_cliente=?";
+        String query = "UPDATE cliente SET nombre=?, telefono=?, pais=?, tipo=?, calle=?, ciudad=?, estado_region=?, codigo_postal=? WHERE id_cliente=?";
         try (Connection conn = ConexionBD.conectar();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, c.getNombre());
             pstmt.setString(2, c.getTelefono());
             pstmt.setString(3, c.getPais());
             pstmt.setString(4, c.getTipo());
-            pstmt.setInt(5, c.getId());
+            pstmt.setString(5, c.getCalle());
+            pstmt.setString(6, c.getCiudad());
+            pstmt.setString(7, c.getEstadoRegion());
+            pstmt.setString(8, c.getCodigoPostal());
+            pstmt.setInt(9, c.getId());
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error updateCliente: " + e.getMessage());
         }
         return false;
+    }
+
+    private Cliente extraerCliente(ResultSet rs) throws SQLException {
+        Cliente c = new Cliente();
+        c.setId(rs.getInt("id_cliente"));
+        c.setNombre(rs.getString("nombre"));
+        c.setTelefono(rs.getString("telefono"));
+        c.setPais(rs.getString("pais"));
+        c.setTipo(rs.getString("tipo"));
+        c.setCalle(rs.getString("calle"));
+        c.setCiudad(rs.getString("ciudad"));
+        c.setEstadoRegion(rs.getString("estado_region"));
+        c.setCodigoPostal(rs.getString("codigo_postal"));
+        return c;
     }
 
     public boolean deleteCliente(int id) {
@@ -87,13 +109,4 @@ public class ClienteDAO {
         return false;
     }
 
-    private Cliente extraerCliente(ResultSet rs) throws SQLException {
-        Cliente c = new Cliente();
-        c.setId(rs.getInt("id_cliente"));
-        c.setNombre(rs.getString("nombre"));
-        c.setTelefono(rs.getString("telefono"));
-        c.setPais(rs.getString("pais"));
-        c.setTipo(rs.getString("tipo"));
-        return c;
-    }
 }
