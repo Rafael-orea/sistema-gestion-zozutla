@@ -1,0 +1,102 @@
+/*====================================================
+            PANTALLA DE INICIO
+====================================================*/
+
+.root{
+    -fx-font-family: "Segoe UI";
+}
+
+/* Fondo */
+.background{
+    -fx-background-color: #000000;
+}
+
+/* Capa oscura sobre la imagen */
+.overlay{
+    -fx-background-color: rgba(0,0,0,0.35);
+}
+
+/* Contenedor izquierdo */
+.welcome-panel{
+    -fx-padding: 70;
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 25;
+}
+
+/* Título */
+.welcome-title{
+
+    -fx-font-size: 48px;
+
+    -fx-font-weight: bold;
+
+    -fx-text-fill: #E7C18A;
+
+}
+
+/* Subtítulo */
+.welcome-subtitle{
+
+    -fx-font-size: 22px;
+
+    -fx-text-fill: white;
+
+}
+
+/* Descripción */
+.welcome-description{
+
+    -fx-font-size: 18px;
+
+    -fx-text-fill: #D8D8D8;
+
+    -fx-wrap-text: true;
+
+}
+
+/* Botón principal */
+.welcome-button{
+
+    -fx-background-color: #C81010;
+
+    -fx-background-radius: 10;
+
+    -fx-text-fill: white;
+
+    -fx-font-size: 18px;
+
+    -fx-font-weight: bold;
+
+    -fx-padding: 12 35;
+
+    -fx-cursor: hand;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,.35),10,0.2,0,3);
+
+}
+
+.welcome-button:hover{
+
+    -fx-background-color: #A50E0E;
+
+}
+
+.welcome-button:pressed{
+
+    -fx-background-color: #7C0A0A;
+
+}
+
+/* Logo */
+.logo-image{
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,.45),20,0.2,0,5);
+
+}
+
+/* Línea decorativa */
+.separator{
+
+    -fx-background-color: #E7C18A;
+
+}

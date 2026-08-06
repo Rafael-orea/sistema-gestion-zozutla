@@ -21,7 +21,9 @@
            style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
 
     <HBox spacing="12" alignment="CENTER_LEFT"
-          style="-fx-background-color: #EDE8DC; -fx-border-color: #C0B090; -fx-border-width: 1; -fx-padding: 12; -fx-background-radius: 4; -fx-border-radius: 4;">
+          style="-fx-background-color: #EDE8DC; -fx-border-color: #C0B090;
+                 -fx-border-width: 1; -fx-padding: 12;
+                 -fx-background-radius: 4; -fx-border-radius: 4;">
         <Label text="PERIODO:"
                style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
         <Label text="Del" style="-fx-text-fill: #2B2118;"/>
@@ -32,39 +34,48 @@
         <Button text="GENERAR REPORTE"
                 onAction="#handleGenerar"
                 prefHeight="34"
-                style="-fx-background-color: #2B2118; -fx-text-fill: #F5F0E8; -fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 6 16; -fx-cursor: hand;"/>
+                style="-fx-background-color: #2B2118; -fx-text-fill: #F5F0E8;
+                       -fx-font-size: 13px; -fx-font-weight: bold;
+                       -fx-padding: 6 16; -fx-cursor: hand;"/>
     </HBox>
 
-    <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS"
-             style="-fx-background-color: #F5F0E8;">
+    <TabPane fx:id="tabPane" VBox.vgrow="ALWAYS">
 
         <Tab text="GANANCIAS" closable="false">
-            <VBox spacing="16" style="-fx-padding: 16;">
+            <VBox spacing="16" style="-fx-padding: 16; -fx-background-color: #F5F0E8;">
 
                 <HBox spacing="16">
                     <VBox alignment="CENTER" spacing="6" prefWidth="180" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="TOTAL VENDIDO"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblTotalVentas" text="0.00"
                                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="6" prefWidth="180" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="NUM. VENTAS"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblNumVentas" text="0"
                                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="6" prefWidth="180" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="DESCUENTOS APLICADOS"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblDescuentos" text="0.00"
                                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #e67e22;"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="6" prefWidth="180" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="GANANCIA NETA"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblGananciaNet" text="0.00"
@@ -105,29 +116,44 @@
                         </TableView>
                     </VBox>
                 </HBox>
+
+                <HBox alignment="CENTER_RIGHT">
+                    <Button text="Exportar Ganancias a Excel"
+                            onAction="#handleExportarGanancias"
+                            prefHeight="34"
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;
+                                   -fx-font-size: 13px; -fx-font-weight: bold;
+                                   -fx-padding: 6 16; -fx-cursor: hand;"/>
+                </HBox>
             </VBox>
         </Tab>
 
         <Tab text="PERDIDAS" closable="false">
-            <VBox spacing="16" style="-fx-padding: 16;">
+            <VBox spacing="16" style="-fx-padding: 16; -fx-background-color: #F5F0E8;">
 
                 <HBox spacing="16">
                     <VBox alignment="CENTER" spacing="6" prefWidth="220" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="PERDIDAS POR MERMA"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblPerdidasMerma" text="0.00"
                                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="6" prefWidth="220" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="PERDIDAS POR ENVIO ZOZUTLA"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblPerdidasEnvio" text="0.00"
                                style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
                     </VBox>
                     <VBox alignment="CENTER" spacing="6" prefWidth="220" prefHeight="90"
-                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1; -fx-background-radius: 4; -fx-border-radius: 4; -fx-padding: 12;">
+                          style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8;
+                                 -fx-border-width: 1; -fx-background-radius: 4;
+                                 -fx-border-radius: 4; -fx-padding: 12;">
                         <Label text="TOTAL PERDIDAS"
                                style="-fx-font-size: 11px; -fx-text-fill: #8B7A65;"/>
                         <Label fx:id="lblPerdidasTotal" text="0.00"
@@ -137,7 +163,7 @@
 
                 <Label text="DETALLE DE MERMAS"
                        style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2B2118;"/>
-                <TableView fx:id="mermasTable" prefHeight="180"
+                <TableView fx:id="mermasTable" prefHeight="200"
                            style="-fx-background-color: #EDE8DC; -fx-border-color: #C8BFA8; -fx-border-width: 1;">
                     <columns>
                         <TableColumn fx:id="colMermaNombre" text="PRODUCTO" prefWidth="180"/>
@@ -169,6 +195,15 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                     </columnResizePolicy>
                 </TableView>
+
+                <HBox alignment="CENTER_RIGHT">
+                    <Button text="Exportar Perdidas a Excel"
+                            onAction="#handleExportarPerdidas"
+                            prefHeight="34"
+                            style="-fx-background-color: #e74c3c; -fx-text-fill: white;
+                                   -fx-font-size: 13px; -fx-font-weight: bold;
+                                   -fx-padding: 6 16; -fx-cursor: hand;"/>
+                </HBox>
             </VBox>
         </Tab>
     </TabPane>

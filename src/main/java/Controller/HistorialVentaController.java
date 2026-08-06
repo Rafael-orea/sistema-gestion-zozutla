@@ -218,8 +218,8 @@ public class HistorialVentaController {
                             setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
                         }
                         case "venta" -> {
-                            setText("Venta");
-                            setStyle("-fx-text-fill: #1C2D42; -fx-font-style: italic;");
+                            setText("Solo venta");
+                            setStyle("-fx-text-fill: #4747D4; -fx-font-style: italic;");
                         }
                         default -> {
                             setText(item);

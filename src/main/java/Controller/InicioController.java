@@ -17,19 +17,20 @@ import java.io.InputStream;
 public class InicioController {
 
     @FXML
+    private ImageView backgroundImage;
+
+    @FXML
     private ImageView logoImage;
 
     @FXML
     public void initialize() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/images/logo.jpeg");
-            if (is != null) {
-                Image image = new Image(is);
-                logoImage.setImage(image);
-            }
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar el logo: " + e.getMessage());
-        }
+        // Logo
+        Image logo = new Image(getClass().getResourceAsStream("/images/logo.jpeg"));
+        logoImage.setImage(logo);
+
+        // Fondo
+        Image fondo = new Image(getClass().getResourceAsStream("/images/fondo_inicio.jpg"));
+        backgroundImage.setImage(fondo);
     }
 
     @FXML
