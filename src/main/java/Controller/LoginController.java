@@ -25,6 +25,7 @@ public class LoginController {
 
     @FXML
     public void initialize() {
+        // Cargar logo
         try {
             InputStream is = getClass().getResourceAsStream("/images/logo.jpeg");
             if (is != null) {
@@ -34,6 +35,20 @@ public class LoginController {
         } catch (Exception e) {
             System.err.println("No se pudo cargar el logo: " + e.getMessage());
         }
+
+        // Limite de 10 caracteres en usuario
+        usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.length() > 10) {
+                usernameField.setText(newVal.substring(0, 10));
+            }
+        });
+
+        // Limite de 10 caracteres en contraseña
+        passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.length() > 10) {
+                passwordField.setText(newVal.substring(0, 10));
+            }
+        });
     }
 
     @FXML
